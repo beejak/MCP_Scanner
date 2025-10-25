@@ -210,6 +210,70 @@ mcp-sentinel/
 - Role confusion
 - Jailbreak attempts
 
+### MCP Configuration Security (Phase 1.6)
+- **Insecure HTTP Servers**: Detects non-HTTPS MCP server URLs (except localhost)
+- **Untrusted Domains**: Flags suspicious TLDs, public IPs, unknown domains
+- **Overly Permissive Paths**: Detects wildcard or root-level file access permissions
+- **Missing SSL Verification**: Warns about missing certificate verification
+- **Hardcoded Credentials**: Finds API keys, tokens, passwords in config files
+- **Untrusted Executables**: Flags commands from /tmp or relative paths
+
+**Scans these config files:**
+- Claude Desktop: `config.json`, `claude_desktop_config.json`
+- Cline: `.cline/mcp.json`
+- Generic: Any `mcp*.json` or configs in `.claude/`, `.cline/`, `.mcp/` directories
+
+## 🔄 Exit Codes (CI/CD Integration)
+
+MCP Sentinel uses standardized exit codes for reliable CI/CD integration:
+
+| Exit Code | Meaning | When It Happens |
+|-----------|---------|----------------|
+| **0** | Success | Scan completed with no issues, or all issues below `--fail-on` threshold |
+| **1** | Vulnerabilities Found | Scan found vulnerabilities at or above `--fail-on` threshold |
+| **2** | Scan Error | Target not found, invalid config, scan failure, or I/O error |
+| **3** | Usage Error | Invalid arguments or command syntax (handled by CLI parser) |
+
+### CI/CD Pipeline Example
+
+```bash
+# GitHub Actions / GitLab CI / Jenkins
+mcp-sentinel scan ./my-server --fail-on high --output sarif --output-file results.sarif
+EXIT_CODE=$?
+
+if [ $EXIT_CODE -eq 1 ]; then
+  echo "❌ Security vulnerabilities found"
+  exit 1
+elif [ $EXIT_CODE -eq 2 ]; then
+  echo "❌ Scan failed with error"
+  exit 2
+elif [ $EXIT_CODE -eq 0 ]; then
+  echo "✅ Scan passed"
+fi
+```
+
+### GitHub Actions Integration
+
+```yaml
+name: MCP Security Scan
+on: [push, pull_request]
+
+jobs:
+  security-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Run MCP Sentinel
+        run: |
+          mcp-sentinel scan . --output sarif --output-file results.sarif --fail-on high
+
+      - name: Upload SARIF to GitHub Code Scanning
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: results.sarif
+```
+
 ## 📝 Example Output
 
 ```
@@ -278,4 +342,25 @@ Built with reference to the excellent work by:
 
 ---
 
-**Status**: Phase 1 Complete ✅ | Next: Phase 2 (AI Analysis & Advanced Detection)
+## 🎯 CI/CD Best Practices
+
+### Configuration File Strategy
+1. **Team Config**: Commit `.mcp-sentinel.yaml` to repo for team standards
+2. **Personal Overrides**: Use `~/.mcp-sentinel/config.yaml` for local preferences
+3. **CI Overrides**: Use CLI flags in CI for strictest settings
+
+### SARIF Integration
+- **GitHub**: Upload SARIF to Code Scanning for PR annotations
+- **GitLab**: Use SARIF reports in Security Dashboard
+- **VS Code**: Open SARIF files directly in Problems panel
+- **SonarQube**: Import SARIF for vulnerability tracking
+
+### Progress Indicators Control
+Set environment variables to customize progress display:
+- `MCP_SENTINEL_NO_PROGRESS=1` - Disable all progress indicators
+- `NO_COLOR=1` - Disable colors (keeps progress structure)
+- `CI=true` - Auto-detected in most CI environments
+
+---
+
+**Status**: Phase 1.6 Complete ✅ | Next: Phase 2 (AI Analysis & Advanced Detection)
