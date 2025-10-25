@@ -17,13 +17,52 @@ pub async fn execute(
     _llm_api_key: Option<String>,
     output: OutputFormat,
     output_file: Option<String>,
-    _severity: SeverityLevel,
+    severity: SeverityLevel,
     fail_on: Option<SeverityLevel>,
-    _config: Option<String>,
+    config_path: Option<String>,
 ) -> SentinelResult<()> {
     info!("📂 Scanning: {}", target);
     debug!("Mode: {:?}", mode);
     debug!("Output format: {:?}", output);
+
+    // Load configuration from file
+    let mut config = match crate::utils::config::load_scan_config(config_path.clone()) {
+        Ok(c) => c,
+        Err(e) => {
+            error!("Failed to load configuration: {}", e);
+            return Err(SentinelError::scan_error(format!(
+                "Failed to load configuration: {}",
+                e
+            )));
+        }
+    };
+
+    // Validate configuration
+    if let Err(e) = crate::utils::config::validate_scan_config(&config) {
+        error!("Invalid configuration: {}", e);
+        return Err(SentinelError::scan_error(format!(
+            "Invalid configuration: {}",
+            e
+        )));
+    }
+
+    // CLI arguments override config file values
+    // Mode override
+    config.mode = match mode {
+        ScanMode::Quick => crate::models::config::ScanMode::Quick,
+        ScanMode::Deep => crate::models::config::ScanMode::Deep,
+    };
+
+    // Severity override
+    config.min_severity = match severity {
+        SeverityLevel::Low => crate::models::vulnerability::Severity::Low,
+        SeverityLevel::Medium => crate::models::vulnerability::Severity::Medium,
+        SeverityLevel::High => crate::models::vulnerability::Severity::High,
+        SeverityLevel::Critical => crate::models::vulnerability::Severity::Critical,
+    };
+
+    debug!("Loaded config: mode={:?}, min_severity={:?}, workers={}",
+           config.mode, config.min_severity, config.parallel_workers);
 
     // Parse target path
     let target_path = PathBuf::from(&target);
@@ -45,8 +84,7 @@ pub async fn execute(
         )));
     }
 
-    // Create scanner configuration
-    let config = ScanConfig::default();
+    // Create scanner with loaded configuration
     let scanner = Scanner::new(config);
 
     // Run scan
