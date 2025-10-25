@@ -23,14 +23,27 @@ MCP Sentinel is a next-generation security scanner for Model Context Protocol (M
   - Code snippets with location info
 
 - **Multiple Output Formats**:
-  - Terminal (with colors)
+  - Terminal (with colors and progress bars)
   - JSON (for CI/CD integration)
-  - HTML, PDF, SARIF (coming in Phase 2-4)
+  - SARIF 2.1.0 (GitHub Code Scanning, GitLab, SonarQube, VS Code)
+  - HTML, PDF (coming in Phase 2-4)
 
 - **High Performance**:
   - Written in Rust for blazing speed
   - Concurrent file scanning
+  - Real-time progress indicators
   - Target: <2s for small MCP servers
+
+- **Configuration & CI/CD**:
+  - YAML configuration files (~/.mcp-sentinel/config.yaml)
+  - Standardized exit codes (0=clean, 1=vulnerabilities, 2=error, 3=usage)
+  - Perfect for CI/CD pipelines
+
+- **MCP-Specific Security** (NEW in Phase 1.6):
+  - Scans Claude Desktop, Cline, and other MCP client configurations
+  - Detects insecure HTTP connections
+  - Identifies hardcoded credentials in config files
+  - Flags overly permissive tool access
 
 ## 🚀 Quick Start
 
@@ -55,9 +68,38 @@ mcp-sentinel scan ./my-mcp-server
 # Scan with JSON output
 mcp-sentinel scan ./my-mcp-server --output json
 
+# Generate SARIF output for GitHub Code Scanning
+mcp-sentinel scan ./my-mcp-server --output sarif --output-file results.sarif
+
 # Fail CI/CD if high-severity issues found
 mcp-sentinel scan ./my-mcp-server --fail-on high
+
+# Use custom configuration file
+mcp-sentinel scan ./my-mcp-server --config my-config.yaml
+
+# Scan with minimum severity filter
+mcp-sentinel scan ./my-mcp-server --severity medium
 ```
+
+### Configuration File
+
+Create `~/.mcp-sentinel/config.yaml` or `.mcp-sentinel.yaml` in your project:
+
+```yaml
+version: "1.0"
+scan:
+  mode: quick              # or: deep
+  min_severity: low        # low, medium, high, critical
+  max_file_size: 10485760  # 10MB in bytes
+  parallel_workers: 8
+  exclude_patterns:
+    - "node_modules/"
+    - ".git/"
+    - "target/"
+    - "dist/"
+```
+
+Configuration priority: CLI flags > project config (./.mcp-sentinel.yaml) > user config (~/.mcp-sentinel/config.yaml) > defaults
 
 ## 📊 Phase 1 Implementation Status
 
