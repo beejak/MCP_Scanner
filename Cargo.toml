@@ -1,0 +1,93 @@
+[package]
+name = "mcp-sentinel"
+version = "0.1.0"
+edition = "2021"
+authors = ["MCP Sentinel Contributors"]
+description = "The Ultimate Security Scanner for MCP Servers - combining static analysis, runtime monitoring, and AI-powered detection"
+license = "Apache-2.0"
+repository = "https://github.com/yourusername/mcp-sentinel"
+keywords = ["mcp", "security", "scanner", "vulnerability", "ai"]
+categories = ["command-line-utilities", "development-tools"]
+
+[[bin]]
+name = "mcp-sentinel"
+path = "src/main.rs"
+
+[lib]
+name = "mcp_sentinel"
+path = "src/lib.rs"
+
+[dependencies]
+# Core Framework
+tokio = { version = "1.40", features = ["full"] }
+clap = { version = "4.5", features = ["derive", "env", "color"] }
+anyhow = "1.0"
+thiserror = "1.0"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Static Analysis Engine
+tree-sitter = "0.20"
+regex = "1.10"
+walkdir = "2.5"
+ignore = "0.4"
+
+# Runtime Proxy Engine
+hyper = { version = "1.4", features = ["full"] }
+axum = "0.7"
+tower = "0.4"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# AI Analysis Engine
+reqwest = { version = "0.12", features = ["json", "rustls-tls"], default-features = false }
+async-openai = "0.24"
+tiktoken-rs = "0.5"
+
+# Security Detection
+sha2 = "0.10"
+base64 = "0.22"
+
+# Output Generation
+crossterm = "0.28"
+indicatif = "0.17"
+comfy-table = "7.1"
+syntect = "5.2"
+handlebars = "6.1"
+chrono = { version = "0.4", features = ["serde"] }
+
+# Configuration & Storage
+serde_yaml = "0.9"
+toml = "0.8"
+directories = "5.0"
+sled = "0.34"
+
+# Utilities
+url = "2.5"
+lazy_static = "1.5"
+once_cell = "1.19"
+uuid = { version = "1.10", features = ["v4", "serde"] }
+num_cpus = "1.16"
+
+[dev-dependencies]
+criterion = { version = "0.5", features = ["html_reports"] }
+proptest = "1.5"
+mockito = "1.5"
+tempfile = "3.12"
+tokio-test = "0.4"
+
+[[bench]]
+name = "scan_benchmark"
+harness = false
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true
+
+[profile.dev]
+opt-level = 0
+
+[profile.test]
+opt-level = 1
