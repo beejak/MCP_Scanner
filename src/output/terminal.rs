@@ -1,3 +1,58 @@
+//! Terminal output formatter with colored, human-readable output.
+//!
+//! This module provides a rich terminal interface for displaying scan results
+//! with colors, emojis, and structured formatting optimized for CLI usage.
+//!
+//! # Features
+//!
+//! - **Color-coded severity**: Critical (🔴), High (🟠), Medium (🟡), Low (🔵)
+//! - **Risk scoring**: 0-100 risk score with visual indicators
+//! - **Smart verbosity**: Shows critical/high by default, all issues in verbose mode
+//! - **Grouped display**: Issues grouped and sorted by severity
+//! - **Rich details**: Impact, remediation, and AI analysis (when verbose)
+//! - **Summary statistics**: Quick overview of scan results
+//!
+//! # Examples
+//!
+//! ## Basic Terminal Output
+//!
+//! ```no_run
+//! use mcp_sentinel::output::{OutputFormatter, terminal::TerminalFormatter};
+//! # use mcp_sentinel::models::scan_result::ScanResult;
+//!
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! let formatter = TerminalFormatter::new();
+//! # let result: ScanResult = todo!();
+//! let output = formatter.output(&result)?;
+//! println!("{}", output);
+//! # Ok(())
+//! # }
+//! ```
+//!
+//! ## Verbose Mode (Show All Details)
+//!
+//! ```no_run
+//! use mcp_sentinel::output::{OutputFormatter, terminal::TerminalFormatter};
+//! # use mcp_sentinel::models::scan_result::ScanResult;
+//!
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! let formatter = TerminalFormatter::new().with_verbose(true);
+//! # let result: ScanResult = todo!();
+//! let output = formatter.output(&result)?;
+//! println!("{}", output);
+//! # Ok(())
+//! # }
+//! ```
+//!
+//! ## Disabling Colors (for CI/CD or piping)
+//!
+//! ```
+//! use mcp_sentinel::output::terminal;
+//!
+//! terminal::disable_colors();
+//! assert!(!terminal::colors_enabled());
+//! ```
+
 use crate::models::scan_result::ScanResult;
 use crate::models::vulnerability::{Severity, Vulnerability};
 use crate::output::OutputFormatter;
@@ -8,32 +63,99 @@ use std::sync::atomic::{AtomicBool, Ordering};
 
 static COLORS_ENABLED: AtomicBool = AtomicBool::new(true);
 
-/// Disable colored output
+/// Disable colored output globally.
+///
+/// This is useful for:
+/// - CI/CD environments that don't support ANSI colors
+/// - Piping output to files
+/// - Testing without color codes
+///
+/// # Examples
+///
+/// ```
+/// use mcp_sentinel::output::terminal;
+///
+/// terminal::disable_colors();
+/// assert!(!terminal::colors_enabled());
+/// ```
 pub fn disable_colors() {
     COLORS_ENABLED.store(false, Ordering::Relaxed);
 }
 
-/// Check if colors are enabled
+/// Check if colored output is enabled.
+///
+/// Returns `true` if colors are enabled (default), `false` if disabled.
 pub fn colors_enabled() -> bool {
     COLORS_ENABLED.load(Ordering::Relaxed)
 }
 
-/// Terminal output formatter with colored output
+/// Terminal output formatter with colored, human-readable output.
+///
+/// Formats scan results for display in a terminal with colors, emojis,
+/// and structured sections. Supports both standard and verbose modes.
+///
+/// # Output Structure
+///
+/// 1. **Header**: Tool banner with scan target
+/// 2. **Summary**: Risk score and issue counts by severity
+/// 3. **Vulnerabilities**: Detailed issues grouped by severity
+/// 4. **Footer**: Scan metadata (duration, engines used)
+///
+/// # Verbosity Modes
+///
+/// - **Standard**: Shows Critical and High issues with basic details
+/// - **Verbose**: Shows all severities with full details (impact, remediation, AI analysis)
+///
+/// # Examples
+///
+/// ```no_run
+/// use mcp_sentinel::output::{OutputFormatter, terminal::TerminalFormatter};
+/// # use mcp_sentinel::models::scan_result::ScanResult;
+///
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// // Standard mode
+/// let formatter = TerminalFormatter::new();
+/// # let result: ScanResult = todo!();
+/// println!("{}", formatter.output(&result)?);
+///
+/// // Verbose mode with all details
+/// let verbose_formatter = TerminalFormatter::new().with_verbose(true);
+/// println!("{}", verbose_formatter.output(&result)?);
+/// # Ok(())
+/// # }
+/// ```
 pub struct TerminalFormatter {
     verbose: bool,
 }
 
 impl TerminalFormatter {
+    /// Create a new terminal formatter with default settings.
+    ///
+    /// Defaults to non-verbose mode with colors enabled.
     pub fn new() -> Self {
         Self { verbose: false }
     }
 
+    /// Set verbose mode.
+    ///
+    /// In verbose mode, the formatter:
+    /// - Shows all severity levels (including Medium and Low)
+    /// - Includes impact and remediation for all issues
+    /// - Displays AI analysis when available
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use mcp_sentinel::output::terminal::TerminalFormatter;
+    ///
+    /// let formatter = TerminalFormatter::new().with_verbose(true);
+    /// ```
     pub fn with_verbose(mut self, verbose: bool) -> Self {
         self.verbose = verbose;
         self
     }
 
-    /// Format header
+    /// Format header section with tool banner.
     fn format_header(&self) -> String {
         let mut output = String::new();
 
@@ -46,7 +168,7 @@ impl TerminalFormatter {
         output
     }
 
-    /// Format summary section
+    /// Format summary section with risk score and issue counts.
     fn format_summary(&self, result: &ScanResult) -> String {
         let mut output = String::new();
 
@@ -82,7 +204,7 @@ impl TerminalFormatter {
         output
     }
 
-    /// Format severity count line
+    /// Format a single severity count line with badge and color.
     fn format_severity_count(&self, label: &str, count: usize, severity: Severity) -> String {
         if colors_enabled() {
             let color = severity_color(severity);
@@ -97,7 +219,7 @@ impl TerminalFormatter {
         }
     }
 
-    /// Format section title
+    /// Format section title with separator lines.
     fn format_section_title(&self, title: &str) -> String {
         let separator = "━".repeat(60);
 
@@ -113,7 +235,10 @@ impl TerminalFormatter {
         }
     }
 
-    /// Format vulnerabilities grouped by severity
+    /// Format all vulnerabilities grouped by severity.
+    ///
+    /// Shows Critical and High issues by default.
+    /// In verbose mode or when few issues exist, shows all severities.
     fn format_vulnerabilities(&self, result: &ScanResult) -> String {
         let mut output = String::new();
 
@@ -171,7 +296,10 @@ impl TerminalFormatter {
         output
     }
 
-    /// Format a single vulnerability
+    /// Format a single vulnerability with all its details.
+    ///
+    /// Includes: ID, title, location, description, and optionally impact,
+    /// remediation, and AI analysis based on severity and verbosity.
     fn format_vulnerability(&self, vuln: &Vulnerability) -> String {
         let mut output = String::new();
 
@@ -223,7 +351,7 @@ impl TerminalFormatter {
         output
     }
 
-    /// Format footer
+    /// Format footer with scan metadata.
     fn format_footer(&self, result: &ScanResult) -> String {
         let mut output = String::new();
 
