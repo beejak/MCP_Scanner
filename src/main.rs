@@ -348,7 +348,7 @@ async fn main() -> ExitCode {
             alert_webhook,
             dashboard,
         } => {
-            cli::proxy::execute(
+            match cli::proxy::execute(
                 config,
                 port,
                 guardrails,
@@ -359,6 +359,13 @@ async fn main() -> ExitCode {
                 dashboard,
             )
             .await
+            {
+                Ok(()) => ExitCode::SUCCESS,
+                Err(e) => {
+                    eprintln!("❌ Error: {}", e);
+                    ExitCode::from(2)
+                }
+            }
         }
         Commands::Monitor {
             target,
@@ -368,7 +375,14 @@ async fn main() -> ExitCode {
             pid_file,
             alert_on,
         } => {
-            cli::monitor::execute(target, interval, watch, daemon, pid_file, alert_on).await
+            match cli::monitor::execute(target, interval, watch, daemon, pid_file, alert_on).await
+            {
+                Ok(()) => ExitCode::SUCCESS,
+                Err(e) => {
+                    eprintln!("❌ Error: {}", e);
+                    ExitCode::from(2)
+                }
+            }
         }
         Commands::Audit {
             target,
@@ -381,7 +395,7 @@ async fn main() -> ExitCode {
             output,
             output_file,
         } => {
-            cli::audit::execute(
+            match cli::audit::execute(
                 target,
                 include_proxy,
                 duration,
@@ -393,23 +407,56 @@ async fn main() -> ExitCode {
                 output_file,
             )
             .await
+            {
+                Ok(()) => ExitCode::SUCCESS,
+                Err(e) => {
+                    eprintln!("❌ Error: {}", e);
+                    ExitCode::from(2)
+                }
+            }
         }
-        Commands::Init { config_path } => cli::init::execute(config_path).await,
-        Commands::Whitelist { command } => match command {
-            WhitelistCommands::Add {
-                item_type,
-                name,
-                hash,
-            } => cli::whitelist::add(item_type, name, hash).await,
-            WhitelistCommands::Remove { hash } => cli::whitelist::remove(hash).await,
-            WhitelistCommands::List => cli::whitelist::list().await,
-            WhitelistCommands::Export { path } => cli::whitelist::export(path).await,
-            WhitelistCommands::Import { path } => cli::whitelist::import(path).await,
+        Commands::Init { config_path } => match cli::init::execute(config_path).await {
+            Ok(()) => ExitCode::SUCCESS,
+            Err(e) => {
+                eprintln!("❌ Error: {}", e);
+                ExitCode::from(2)
+            }
         },
-        Commands::Rules { command } => match command {
-            RulesCommands::Validate { path } => cli::rules::validate(path).await,
-            RulesCommands::List => cli::rules::list().await,
-            RulesCommands::Test { rules, traffic } => cli::rules::test(rules, traffic).await,
-        },
-    }
+        Commands::Whitelist { command } => {
+            let result = match command {
+                WhitelistCommands::Add {
+                    item_type,
+                    name,
+                    hash,
+                } => cli::whitelist::add(item_type, name, hash).await,
+                WhitelistCommands::Remove { hash } => cli::whitelist::remove(hash).await,
+                WhitelistCommands::List => cli::whitelist::list().await,
+                WhitelistCommands::Export { path } => cli::whitelist::export(path).await,
+                WhitelistCommands::Import { path } => cli::whitelist::import(path).await,
+            };
+            match result {
+                Ok(()) => ExitCode::SUCCESS,
+                Err(e) => {
+                    eprintln!("❌ Error: {}", e);
+                    ExitCode::from(2)
+                }
+            }
+        }
+        Commands::Rules { command } => {
+            let result = match command {
+                RulesCommands::Validate { path } => cli::rules::validate(path).await,
+                RulesCommands::List => cli::rules::list().await,
+                RulesCommands::Test { rules, traffic } => cli::rules::test(rules, traffic).await,
+            };
+            match result {
+                Ok(()) => ExitCode::SUCCESS,
+                Err(e) => {
+                    eprintln!("❌ Error: {}", e);
+                    ExitCode::from(2)
+                }
+            }
+        }
+    };
+
+    result
 }
