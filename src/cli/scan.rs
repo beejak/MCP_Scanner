@@ -136,7 +136,33 @@ pub async fn execute(
                 println!("{}", json);
             }
         }
-        _ => {
+        OutputFormat::Sarif => {
+            let sarif = match crate::output::sarif::generate(&result) {
+                Ok(s) => s,
+                Err(e) => {
+                    error!("Failed to generate SARIF report: {}", e);
+                    return Err(SentinelError::scan_error(format!(
+                        "Failed to generate SARIF report: {}",
+                        e
+                    )));
+                }
+            };
+
+            if let Some(file_path) = &output_file {
+                if let Err(e) = std::fs::write(file_path, &sarif) {
+                    error!("Failed to write SARIF report to '{}': {}", file_path, e);
+                    return Err(SentinelError::scan_error(format!(
+                        "Failed to write SARIF report to '{}': {}",
+                        file_path, e
+                    )));
+                }
+                info!("SARIF report saved to: {}", file_path);
+                println!("✅ SARIF report saved to: {}", file_path);
+            } else {
+                println!("{}", sarif);
+            }
+        }
+        OutputFormat::Html | OutputFormat::Pdf => {
             error!("Output format {:?} not yet implemented", output);
             return Err(SentinelError::scan_error(format!(
                 "Output format {:?} not yet implemented",
