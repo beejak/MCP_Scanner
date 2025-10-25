@@ -20,7 +20,7 @@ pub async fn execute(
     _severity: SeverityLevel,
     fail_on: Option<SeverityLevel>,
     _config: Option<String>,
-) -> Result<()> {
+) -> SentinelResult<()> {
     info!("📂 Scanning: {}", target);
     debug!("Mode: {:?}", mode);
     debug!("Output format: {:?}", output);
@@ -30,17 +30,19 @@ pub async fn execute(
 
     // Check if target exists
     if !target_path.exists() {
-        anyhow::bail!(
+        error!("Target path does not exist: '{}'", target);
+        return Err(SentinelError::scan_error(format!(
             "Target path does not exist: '{}'\nPlease provide a valid directory path.",
             target
-        );
+        )));
     }
 
     if !target_path.is_dir() {
-        anyhow::bail!(
+        error!("Target must be a directory: '{}'", target);
+        return Err(SentinelError::scan_error(format!(
             "Target must be a directory, but '{}' is a file.\nPlease provide a directory to scan.",
             target
-        );
+        )));
     }
 
     // Create scanner configuration
@@ -52,7 +54,10 @@ pub async fn execute(
         Ok(r) => r,
         Err(e) => {
             error!("Scan failed for '{}': {}", target, e);
-            return Err(e).context(format!("Failed to scan directory '{}'", target));
+            return Err(SentinelError::scan_error(format!(
+                "Failed to scan directory '{}': {}",
+                target, e
+            )));
         }
     };
 
@@ -61,7 +66,10 @@ pub async fn execute(
         OutputFormat::Terminal => {
             if let Err(e) = crate::output::terminal::render(&result) {
                 error!("Failed to render terminal output: {}", e);
-                return Err(e);
+                return Err(SentinelError::scan_error(format!(
+                    "Failed to render terminal output: {}",
+                    e
+                )));
             }
         }
         OutputFormat::Json => {
@@ -69,14 +77,20 @@ pub async fn execute(
                 Ok(j) => j,
                 Err(e) => {
                     error!("Failed to generate JSON report: {}", e);
-                    return Err(e).context("Failed to generate JSON report");
+                    return Err(SentinelError::scan_error(format!(
+                        "Failed to generate JSON report: {}",
+                        e
+                    )));
                 }
             };
 
             if let Some(file_path) = &output_file {
                 if let Err(e) = std::fs::write(file_path, &json) {
                     error!("Failed to write report to '{}': {}", file_path, e);
-                    return Err(e).context(format!("Failed to write report to '{}'", file_path));
+                    return Err(SentinelError::scan_error(format!(
+                        "Failed to write report to '{}': {}",
+                        file_path, e
+                    )));
                 }
                 info!("Report saved to: {}", file_path);
                 println!("✅ Report saved to: {}", file_path);
@@ -86,7 +100,10 @@ pub async fn execute(
         }
         _ => {
             error!("Output format {:?} not yet implemented", output);
-            anyhow::bail!("Output format {:?} not yet implemented", output);
+            return Err(SentinelError::scan_error(format!(
+                "Output format {:?} not yet implemented",
+                output
+            )));
         }
     }
 
@@ -104,9 +121,13 @@ pub async fn execute(
                 "Vulnerabilities found at or above {:?} threshold: {} critical, {} high",
                 threshold, result.summary.critical, result.summary.high
             );
-            anyhow::bail!("Found vulnerabilities at or above {:?} level", threshold);
+            return Err(SentinelError::vulnerabilities_found(format!(
+                "Found vulnerabilities at or above {:?} level",
+                threshold
+            )));
         }
     }
 
+    // Scan completed successfully with no issues or issues below threshold
     Ok(())
 }
