@@ -69,6 +69,23 @@ dirs = "5"
 # HTTP Client
 http = "1"
 
+# Phase 2.0: Git Integration & Diff-Aware Scanning
+git2 = "0.18"                       # Git repository operations
+glob = "0.3"                        # Glob pattern matching
+
+# Phase 2.0: Semantic Analysis
+tree-sitter-go = "0.20"             # Go language support
+
+# Phase 2.0: Enhanced Logging
+tracing-appender = "0.2"            # Log file rotation
+
+# Phase 2.0: Data Compression
+flate2 = "1.0"                      # Baseline compression
+
+# Phase 2.0: Async Runtime
+parking_lot = "0.12"                # Better mutexes
+dashmap = "5.5"                     # Concurrent hash map
+
 [[bin]]
 name = "mcp-sentinel"
 path = "src/main.rs"
