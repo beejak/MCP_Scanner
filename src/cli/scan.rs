@@ -4,8 +4,8 @@ use crate::models::scan_result::{ScanResult, Metadata};
 use crate::models::vulnerability::{Vulnerability, Severity};
 use crate::output::{OutputFormat, OutputFormatter, terminal::TerminalFormatter, json::JsonFormatter};
 use crate::utils::file::{FileScanner, read_file_contents};
-use anyhow::Result;
-use std::path::Path;
+use crate::error::{Result, ScanError};
+use std::path::{Path, PathBuf};
 use std::time::Instant;
 use tracing::{info, debug};
 
@@ -91,6 +91,13 @@ async fn scan_target(target: &str, config: &Config) -> Result<Vec<Vulnerability>
     let target_path = Path::new(target);
     let mut all_vulnerabilities = Vec::new();
 
+    // Verify target exists
+    if !target_path.exists() {
+        return Err(ScanError::TargetNotFound {
+            path: target_path.to_path_buf(),
+        });
+    }
+
     // Initialize detectors
     let detectors: Vec<Box<dyn Detector>> = vec![
         Box::new(ToolPoisoningDetector::new()),
@@ -101,7 +108,11 @@ async fn scan_target(target: &str, config: &Config) -> Result<Vec<Vulnerability>
     if target_path.is_file() {
         // Scan single file
         info!("Scanning file: {}", target);
-        let content = read_file_contents(target_path)?;
+        let content = read_file_contents(target_path)
+            .map_err(|e| ScanError::FileReadError {
+                path: target_path.to_path_buf(),
+                source: e,
+            })?;
         all_vulnerabilities.extend(scan_content(&content, Some(target), &detectors)?);
     } else if target_path.is_dir() {
         // Scan directory
@@ -112,7 +123,11 @@ async fn scan_target(target: &str, config: &Config) -> Result<Vec<Vulnerability>
             .respect_gitignore(config.scanning.respect_gitignore)
             .follow_symlinks(config.scanning.follow_symlinks);
 
-        let files = scanner.discover_files(target_path)?;
+        let files = scanner.discover_files(target_path)
+            .map_err(|e| ScanError::DirectoryTraversalError {
+                path: target_path.to_path_buf(),
+                source: e,
+            })?;
 
         info!("Found {} files to scan", files.len());
 
@@ -126,12 +141,16 @@ async fn scan_target(target: &str, config: &Config) -> Result<Vec<Vulnerability>
                     all_vulnerabilities.extend(vulns);
                 }
                 Err(e) => {
+                    // Log error but continue scanning other files
                     debug!("Failed to read {}: {}", file.path.display(), e);
                 }
             }
         }
     } else {
-        anyhow::bail!("Target is neither a file nor a directory: {}", target);
+        return Err(ScanError::InvalidTarget {
+            path: target_path.to_path_buf(),
+            reason: "Target is neither a file nor a directory".to_string(),
+        });
     }
 
     info!("Scan complete. Found {} vulnerabilities", all_vulnerabilities.len());
@@ -150,6 +169,7 @@ fn scan_content(
         match detector.scan(content, file_path) {
             Ok(vulns) => vulnerabilities.extend(vulns),
             Err(e) => {
+                // Log detector failures but don't stop scanning
                 debug!("Detector {} failed: {}", detector.name(), e);
             }
         }
@@ -174,7 +194,11 @@ fn output_results(
             println!("{}", output);
 
             if let Some(file_path) = output_file {
-                std::fs::write(file_path, output)?;
+                std::fs::write(file_path, output)
+                    .map_err(|e| ScanError::FileWriteError {
+                        path: PathBuf::from(file_path),
+                        source: e,
+                    })?;
                 println!("Report saved to: {}", file_path);
             }
         }
@@ -183,14 +207,21 @@ fn output_results(
             let output = formatter.output(result)?;
 
             if let Some(file_path) = output_file {
-                std::fs::write(file_path, &output)?;
+                std::fs::write(file_path, &output)
+                    .map_err(|e| ScanError::FileWriteError {
+                        path: PathBuf::from(file_path),
+                        source: e,
+                    })?;
                 println!("Report saved to: {}", file_path);
             } else {
                 println!("{}", output);
             }
         }
         _ => {
-            anyhow::bail!("Output format '{}' not yet implemented", format);
+            return Err(ScanError::UnsupportedFormat {
+                format: format.to_string(),
+                supported: vec!["terminal".to_string(), "json".to_string()],
+            });
         }
     }
 
