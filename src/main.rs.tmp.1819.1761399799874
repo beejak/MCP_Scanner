@@ -294,8 +294,8 @@ async fn main() -> ExitCode {
 
     info!("🛡️  MCP Sentinel v{}", env!("CARGO_PKG_VERSION"));
 
-    // Execute command
-    match cli.command {
+    // Execute command and handle exit codes
+    let result = match cli.command {
         Commands::Scan {
             target,
             mode,
@@ -308,7 +308,7 @@ async fn main() -> ExitCode {
             fail_on,
             config,
         } => {
-            cli::scan::execute(
+            match cli::scan::execute(
                 target,
                 mode,
                 llm_provider,
@@ -321,6 +321,22 @@ async fn main() -> ExitCode {
                 config,
             )
             .await
+            {
+                Ok(()) => ExitCode::SUCCESS,
+                Err(cli::SentinelError::VulnerabilitiesFound { message }) => {
+                    eprintln!("❌ {}", message);
+                    ExitCode::from(1)
+                }
+                Err(cli::SentinelError::ScanError { message }) => {
+                    eprintln!("❌ {}", message);
+                    ExitCode::from(2)
+                }
+                Err(cli::SentinelError::UsageError { message }) => {
+                    eprintln!("❌ {}", message);
+                    ExitCode::from(3)
+                }
+                Err(cli::SentinelError::Success) => ExitCode::SUCCESS,
+            }
         }
         Commands::Proxy {
             config,
