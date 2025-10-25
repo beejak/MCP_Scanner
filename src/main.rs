@@ -1,5 +1,6 @@
 use anyhow::Result;
 use clap::{Parser, Subcommand};
+use std::process::ExitCode;
 use tracing::info;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
@@ -29,6 +30,12 @@ struct Cli {
 #[derive(Subcommand)]
 enum Commands {
     /// Scan MCP server or configuration for vulnerabilities
+    ///
+    /// Exit codes:
+    ///   0 - No issues found (or below --fail-on threshold)
+    ///   1 - Vulnerabilities found at or above --fail-on level
+    ///   2 - Scan error (target not found, invalid config, etc.)
+    ///   3 - Usage error (invalid arguments)
     #[command(visible_alias = "s")]
     Scan {
         /// Path to MCP server directory, GitHub URL, or config file
@@ -268,7 +275,7 @@ enum RulesCommands {
 }
 
 #[tokio::main]
-async fn main() -> Result<()> {
+async fn main() -> ExitCode {
     let cli = Cli::parse();
 
     // Initialize tracing
@@ -293,8 +300,8 @@ async fn main() -> Result<()> {
 
     info!("🛡️  MCP Sentinel v{}", env!("CARGO_PKG_VERSION"));
 
-    // Execute command
-    match cli.command {
+    // Execute command and handle exit codes
+    let result = match cli.command {
         Commands::Scan {
             target,
             mode,
@@ -307,7 +314,7 @@ async fn main() -> Result<()> {
             fail_on,
             config,
         } => {
-            cli::scan::execute(
+            match cli::scan::execute(
                 target,
                 mode,
                 llm_provider,
@@ -320,6 +327,22 @@ async fn main() -> Result<()> {
                 config,
             )
             .await
+            {
+                Ok(()) => ExitCode::SUCCESS,
+                Err(cli::SentinelError::VulnerabilitiesFound { message }) => {
+                    eprintln!("❌ {}", message);
+                    ExitCode::from(1)
+                }
+                Err(cli::SentinelError::ScanError { message }) => {
+                    eprintln!("❌ {}", message);
+                    ExitCode::from(2)
+                }
+                Err(cli::SentinelError::UsageError { message }) => {
+                    eprintln!("❌ {}", message);
+                    ExitCode::from(3)
+                }
+                Err(cli::SentinelError::Success) => ExitCode::SUCCESS,
+            }
         }
         Commands::Proxy {
             config,
@@ -331,7 +354,7 @@ async fn main() -> Result<()> {
             alert_webhook,
             dashboard,
         } => {
-            cli::proxy::execute(
+            match cli::proxy::execute(
                 config,
                 port,
                 guardrails,
@@ -342,6 +365,13 @@ async fn main() -> Result<()> {
                 dashboard,
             )
             .await
+            {
+                Ok(()) => ExitCode::SUCCESS,
+                Err(e) => {
+                    eprintln!("❌ Error: {}", e);
+                    ExitCode::from(2)
+                }
+            }
         }
         Commands::Monitor {
             target,
@@ -351,7 +381,14 @@ async fn main() -> Result<()> {
             pid_file,
             alert_on,
         } => {
-            cli::monitor::execute(target, interval, watch, daemon, pid_file, alert_on).await
+            match cli::monitor::execute(target, interval, watch, daemon, pid_file, alert_on).await
+            {
+                Ok(()) => ExitCode::SUCCESS,
+                Err(e) => {
+                    eprintln!("❌ Error: {}", e);
+                    ExitCode::from(2)
+                }
+            }
         }
         Commands::Audit {
             target,
@@ -364,7 +401,7 @@ async fn main() -> Result<()> {
             output,
             output_file,
         } => {
-            cli::audit::execute(
+            match cli::audit::execute(
                 target,
                 include_proxy,
                 duration,
@@ -376,23 +413,56 @@ async fn main() -> Result<()> {
                 output_file,
             )
             .await
+            {
+                Ok(()) => ExitCode::SUCCESS,
+                Err(e) => {
+                    eprintln!("❌ Error: {}", e);
+                    ExitCode::from(2)
+                }
+            }
         }
-        Commands::Init { config_path } => cli::init::execute(config_path).await,
-        Commands::Whitelist { command } => match command {
-            WhitelistCommands::Add {
-                item_type,
-                name,
-                hash,
-            } => cli::whitelist::add(item_type, name, hash).await,
-            WhitelistCommands::Remove { hash } => cli::whitelist::remove(hash).await,
-            WhitelistCommands::List => cli::whitelist::list().await,
-            WhitelistCommands::Export { path } => cli::whitelist::export(path).await,
-            WhitelistCommands::Import { path } => cli::whitelist::import(path).await,
+        Commands::Init { config_path } => match cli::init::execute(config_path).await {
+            Ok(()) => ExitCode::SUCCESS,
+            Err(e) => {
+                eprintln!("❌ Error: {}", e);
+                ExitCode::from(2)
+            }
         },
-        Commands::Rules { command } => match command {
-            RulesCommands::Validate { path } => cli::rules::validate(path).await,
-            RulesCommands::List => cli::rules::list().await,
-            RulesCommands::Test { rules, traffic } => cli::rules::test(rules, traffic).await,
-        },
-    }
+        Commands::Whitelist { command } => {
+            let result = match command {
+                WhitelistCommands::Add {
+                    item_type,
+                    name,
+                    hash,
+                } => cli::whitelist::add(item_type, name, hash).await,
+                WhitelistCommands::Remove { hash } => cli::whitelist::remove(hash).await,
+                WhitelistCommands::List => cli::whitelist::list().await,
+                WhitelistCommands::Export { path } => cli::whitelist::export(path).await,
+                WhitelistCommands::Import { path } => cli::whitelist::import(path).await,
+            };
+            match result {
+                Ok(()) => ExitCode::SUCCESS,
+                Err(e) => {
+                    eprintln!("❌ Error: {}", e);
+                    ExitCode::from(2)
+                }
+            }
+        }
+        Commands::Rules { command } => {
+            let result = match command {
+                RulesCommands::Validate { path } => cli::rules::validate(path).await,
+                RulesCommands::List => cli::rules::list().await,
+                RulesCommands::Test { rules, traffic } => cli::rules::test(rules, traffic).await,
+            };
+            match result {
+                Ok(()) => ExitCode::SUCCESS,
+                Err(e) => {
+                    eprintln!("❌ Error: {}", e);
+                    ExitCode::from(2)
+                }
+            }
+        }
+    };
+
+    result
 }
