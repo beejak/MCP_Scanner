@@ -30,6 +30,12 @@ struct Cli {
 #[derive(Subcommand)]
 enum Commands {
     /// Scan MCP server or configuration for vulnerabilities
+    ///
+    /// Exit codes:
+    ///   0 - No issues found (or below --fail-on threshold)
+    ///   1 - Vulnerabilities found at or above --fail-on level
+    ///   2 - Scan error (target not found, invalid config, etc.)
+    ///   3 - Usage error (invalid arguments)
     #[command(visible_alias = "s")]
     Scan {
         /// Path to MCP server directory, GitHub URL, or config file
