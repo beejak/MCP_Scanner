@@ -1,5 +1,6 @@
 //! Utility functions
 
+pub mod config;
 pub mod file;
 
 // Phase 2+ utilities
