@@ -101,9 +101,24 @@ scan:
 
 Configuration priority: CLI flags > project config (./.mcp-sentinel.yaml) > user config (~/.mcp-sentinel/config.yaml) > defaults
 
-## 📊 Phase 1 Implementation Status
+## 📊 Implementation Status
 
-### ✅ Completed
+### ✅ Phase 1.6 Complete (NEW!)
+
+**Production-Ready Features:**
+- [x] **SARIF 2.1.0 Output** - Full GitHub Code Scanning, GitLab, SonarQube, VS Code integration
+- [x] **Configuration File Support** - YAML configs with multi-level priority (CLI > project > user)
+- [x] **MCP Config Scanner** - Detects security issues in Claude Desktop, Cline configs (6 security rules)
+- [x] **Progress Indicators** - Real-time progress bars and spinners with smart TTY/CI detection
+- [x] **Enhanced Exit Codes** - Standardized codes for CI/CD (0=clean, 1=vulns, 2=error, 3=usage)
+
+**Edge Case Handling:**
+- [x] Permission-specific error messages
+- [x] Empty/partial config file handling
+- [x] YAML syntax errors with line numbers
+- [x] Environment variable detection (NO_COLOR, CI, MCP_SENTINEL_NO_PROGRESS)
+
+### ✅ Phase 1 Complete
 
 - [x] Project structure and build configuration
 - [x] CLI framework (7 commands: scan, proxy, monitor, audit, init, whitelist, rules)
@@ -116,29 +131,29 @@ Configuration priority: CLI flags > project config (./.mcp-sentinel.yaml) > user
 - [x] Scan command fully functional
 - [x] Test fixtures with vulnerable code samples
 
-### 🔄 In Progress / Next Steps
+### 🔄 Next Steps
 
-**Phase 2 (Weeks 5-8):**
+**Phase 2 (Upcoming):**
 - [ ] Semgrep integration
 - [ ] Tree-sitter code parsing
 - [ ] AI analysis engine (OpenAI, Anthropic, Ollama)
 - [ ] HTML report generator
 - [ ] GitHub repository scanning
-- [ ] Configuration file support
 - [ ] Additional detectors (PII, toxic flows, anomalies)
+- [ ] Baseline scanning & diff-aware scanning
+- [ ] Vulnerability suppression (.mcp-sentinel-ignore)
 
-**Phase 3 (Weeks 9-12):**
+**Phase 3:**
 - [ ] Runtime proxy engine
 - [ ] Guardrails enforcement
 - [ ] Web dashboard
 - [ ] Real-time monitoring
 - [ ] Rug pull detection
 
-**Phase 4 (Weeks 13-16):**
+**Phase 4:**
 - [ ] PDF report generation
-- [ ] SARIF output format
 - [ ] Whitelist management
-- [ ] Performance optimizations
+- [ ] Performance optimizations (caching, incremental scans)
 - [ ] Comprehensive documentation
 
 ## 🛠️ Architecture
