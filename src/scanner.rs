@@ -230,7 +230,62 @@ impl Scanner {
             Err(e) => warn!("Prompt injection detector failed on {}: {}", file_path, e),
         }
 
+        // 6. MCP configuration security detection
+        if Self::is_mcp_config_file(path) {
+            match crate::detectors::mcp_config::detect(&content, &file_path) {
+                Ok(vulns) => {
+                    if !vulns.is_empty() {
+                        debug!("MCP config detector found {} issues in {}", vulns.len(), file_path);
+                    }
+                    vulnerabilities.extend(vulns)
+                },
+                Err(e) => warn!("MCP config detector failed on {}: {}", file_path, e),
+            }
+        }
+
         Ok(vulnerabilities)
+    }
+
+    /// Check if file appears to be an MCP configuration file
+    fn is_mcp_config_file(path: &Path) -> bool {
+        let file_name = path.file_name()
+            .and_then(|n| n.to_str())
+            .unwrap_or("");
+
+        let path_str = path.to_string_lossy();
+
+        // Check if file name contains "mcp" AND has .json extension
+        if file_name.to_lowercase().contains("mcp") && file_name.ends_with(".json") {
+            return true;
+        }
+
+        // Check if it's config.json in MCP-related directories
+        if file_name == "config.json" {
+            if path_str.contains("/.claude/")
+                || path_str.contains("/.cline/")
+                || path_str.contains("/.mcp/")
+                || path_str.contains("\\.claude\\")
+                || path_str.contains("\\.cline\\")
+                || path_str.contains("\\.mcp\\")
+            {
+                return true;
+            }
+        }
+
+        // Check if path contains MCP-related directories
+        if path_str.contains("/.claude/")
+            || path_str.contains("/.cline/")
+            || path_str.contains("/.mcp/")
+            || path_str.contains("\\.claude\\")
+            || path_str.contains("\\.cline\\")
+            || path_str.contains("\\.mcp\\")
+        {
+            if file_name.ends_with(".json") {
+                return true;
+            }
+        }
+
+        false
     }
 }
 
