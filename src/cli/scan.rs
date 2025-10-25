@@ -1,9 +1,9 @@
 //! Scan command implementation
 
-use anyhow::{Context, Result};
 use std::path::PathBuf;
 use tracing::{debug, error, info, warn};
 
+use super::errors::{SentinelError, SentinelResult};
 use super::types::{LlmProvider, OutputFormat, ScanMode, SeverityLevel};
 use crate::models::config::ScanConfig;
 use crate::scanner::Scanner;
