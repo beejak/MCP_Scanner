@@ -168,27 +168,66 @@ fn load_scan_config_from_file(path: &str) -> Result<ScanConfig> {
 
 /// Load AppConfig from a specific file
 fn load_app_config_from_file(path: &str) -> Result<AppConfig> {
-    let contents = fs::read_to_string(path)
-        .with_context(|| format!("Failed to read config file: {}", path))?;
+    // Read file with detailed error handling
+    let contents = match fs::read_to_string(path) {
+        Ok(c) => c,
+        Err(e) => {
+            // Provide specific error message based on error kind
+            let reason = match e.kind() {
+                std::io::ErrorKind::NotFound => "File not found",
+                std::io::ErrorKind::PermissionDenied => "Permission denied",
+                std::io::ErrorKind::InvalidData => "File contains invalid UTF-8",
+                _ => "I/O error",
+            };
+            anyhow::bail!("Failed to load config from '{}': {}", path, reason);
+        }
+    };
 
-    serde_yaml::from_str(&contents)
-        .with_context(|| format!("Failed to parse config file as YAML: {}", path))
+    // Handle empty config file
+    if contents.trim().is_empty() {
+        debug!("Config file '{}' is empty, using defaults", path);
+        return Ok(AppConfig::default());
+    }
+
+    // Parse YAML with detailed error reporting
+    match serde_yaml::from_str::<AppConfig>(&contents) {
+        Ok(config) => Ok(config),
+        Err(e) => {
+            // Extract line number from serde_yaml error if available
+            let error_msg = format!("{}", e);
+            let line_info = if error_msg.contains("line") {
+                error_msg.clone()
+            } else {
+                format!("Invalid YAML syntax: {}", error_msg)
+            };
+            anyhow::bail!("Failed to load config from '{}': {}", path, line_info);
+        }
+    }
 }
 
 /// Validate ScanConfig values
 pub fn validate_scan_config(config: &ScanConfig) -> Result<()> {
+    // Validate max_file_size
     if config.max_file_size == 0 {
-        anyhow::bail!("Invalid configuration: max_file_size must be greater than 0");
+        anyhow::bail!(
+            "Invalid configuration value for 'max_file_size': must be greater than 0"
+        );
     }
 
+    // Validate parallel_workers
     if config.parallel_workers == 0 {
-        anyhow::bail!("Invalid configuration: parallel_workers must be at least 1");
+        anyhow::bail!(
+            "Invalid configuration value for 'parallel_workers': must be at least 1"
+        );
     }
 
     // Warn about potentially invalid exclude patterns but don't fail
-    for pattern in &config.exclude_patterns {
+    for (idx, pattern) in config.exclude_patterns.iter().enumerate() {
         if pattern.is_empty() {
-            warn!("Empty exclude pattern found in configuration");
+            warn!(
+                "Invalid configuration value for 'exclude_patterns[{}]': pattern is empty",
+                idx
+            );
         }
     }
 
