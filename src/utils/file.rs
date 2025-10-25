@@ -1,17 +1,125 @@
+//! File discovery and classification utilities.
+//!
+//! This module provides tools for discovering, filtering, and classifying files
+//! for security scanning. It handles .gitignore rules, binary detection, file
+//! size limits, and pattern matching.
+//!
+//! # Features
+//!
+//! - **Smart discovery**: Respects .gitignore, skips binary files
+//! - **Size limits**: Configurable max file size to avoid scanning huge files
+//! - **Pattern matching**: Filter files by glob patterns or extensions
+//! - **Classification**: Identify source files vs config files
+//! - **Symlink handling**: Configurable symlink following
+//!
+//! # Examples
+//!
+//! ## Basic File Discovery
+//!
+//! ```no_run
+//! use mcp_sentinel::utils::FileScanner;
+//! use std::path::Path;
+//!
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! let scanner = FileScanner::new();
+//! let files = scanner.discover_files(Path::new("./mcp-server"))?;
+//!
+//! for file in files {
+//!     println!("{}: {} bytes", file.path.display(), file.size);
+//! }
+//! # Ok(())
+//! # }
+//! ```
+//!
+//! ## Custom Configuration
+//!
+//! ```no_run
+//! use mcp_sentinel::utils::FileScanner;
+//! use std::path::Path;
+//!
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! let scanner = FileScanner::new()
+//!     .max_file_size(5_242_880)      // 5 MB limit
+//!     .respect_gitignore(true)        // Honor .gitignore
+//!     .follow_symlinks(false)         // Don't follow symlinks
+//!     .max_depth(Some(10));          // Limit directory depth
+//!
+//! let files = scanner.discover_files(Path::new("."))?;
+//! println!("Found {} files", files.len());
+//! # Ok(())
+//! # }
+//! ```
+//!
+//! ## Pattern Filtering
+//!
+//! ```no_run
+//! use mcp_sentinel::utils::FileScanner;
+//! use std::path::Path;
+//!
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! let scanner = FileScanner::new();
+//! let patterns = vec!["*.py".to_string(), "*.js".to_string()];
+//!
+//! let files = scanner.discover_files_with_patterns(
+//!     Path::new("./src"),
+//!     &patterns
+//! )?;
+//!
+//! println!("Found {} Python/JavaScript files", files.len());
+//! # Ok(())
+//! # }
+//! ```
+
 use anyhow::Result;
 use ignore::WalkBuilder;
 use std::path::{Path, PathBuf};
 use tracing::{debug, warn};
 
-/// Represents a discovered file for scanning
+/// Represents a discovered file for scanning.
+///
+/// Contains metadata about a file that has been discovered during
+/// filesystem traversal and is ready for security scanning.
+///
+/// # Fields
+///
+/// - `path`: Full path to the file
+/// - `size`: File size in bytes
+/// - `is_binary`: Whether the file appears to be binary (not text)
 #[derive(Debug, Clone)]
 pub struct DiscoveredFile {
+    /// Full path to the discovered file
     pub path: PathBuf,
+    /// File size in bytes
     pub size: u64,
+    /// Whether the file is detected as binary
     pub is_binary: bool,
 }
 
-/// File scanner for discovering files to scan
+/// File scanner for discovering files to scan.
+///
+/// Provides flexible file discovery with configurable filtering, size limits,
+/// and .gitignore support. Uses the `ignore` crate for efficient traversal.
+///
+/// # Builder Pattern
+///
+/// The scanner uses a builder pattern for configuration:
+///
+/// ```
+/// use mcp_sentinel::utils::FileScanner;
+///
+/// let scanner = FileScanner::new()
+///     .max_file_size(10_485_760)
+///     .respect_gitignore(true)
+///     .follow_symlinks(false);
+/// ```
+///
+/// # Default Configuration
+///
+/// - Max file size: 10 MB
+/// - Respect .gitignore: Yes
+/// - Follow symlinks: No
+/// - Max depth: Unlimited
+/// - Binary files: Skipped automatically
 pub struct FileScanner {
     max_file_size: u64,
     respect_gitignore: bool,
@@ -20,7 +128,21 @@ pub struct FileScanner {
 }
 
 impl FileScanner {
-    /// Create a new file scanner with default settings
+    /// Create a new file scanner with default settings.
+    ///
+    /// Defaults:
+    /// - Max file size: 10 MB (10,485,760 bytes)
+    /// - Respect .gitignore: true
+    /// - Follow symlinks: false
+    /// - Max depth: None (unlimited)
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use mcp_sentinel::utils::FileScanner;
+    ///
+    /// let scanner = FileScanner::new();
+    /// ```
     pub fn new() -> Self {
         Self {
             max_file_size: 10_485_760, // 10 MB
@@ -30,31 +152,145 @@ impl FileScanner {
         }
     }
 
-    /// Set maximum file size to scan
+    /// Set maximum file size to scan (in bytes).
+    ///
+    /// Files larger than this size will be skipped during discovery.
+    /// This helps avoid performance issues with very large files.
+    ///
+    /// # Arguments
+    ///
+    /// * `size` - Maximum file size in bytes
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use mcp_sentinel::utils::FileScanner;
+    ///
+    /// // Limit to 5 MB
+    /// let scanner = FileScanner::new().max_file_size(5_242_880);
+    ///
+    /// // No practical limit
+    /// let large_scanner = FileScanner::new().max_file_size(u64::MAX);
+    /// ```
     pub fn max_file_size(mut self, size: u64) -> Self {
         self.max_file_size = size;
         self
     }
 
-    /// Set whether to respect .gitignore files
+    /// Set whether to respect .gitignore files.
+    ///
+    /// When enabled, files and directories listed in .gitignore will be
+    /// excluded from discovery. This is usually what you want for scanning
+    /// source repositories.
+    ///
+    /// # Arguments
+    ///
+    /// * `respect` - true to honor .gitignore, false to scan all files
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use mcp_sentinel::utils::FileScanner;
+    ///
+    /// // Respect .gitignore (default)
+    /// let scanner = FileScanner::new().respect_gitignore(true);
+    ///
+    /// // Scan everything, including ignored files
+    /// let full_scanner = FileScanner::new().respect_gitignore(false);
+    /// ```
     pub fn respect_gitignore(mut self, respect: bool) -> Self {
         self.respect_gitignore = respect;
         self
     }
 
-    /// Set whether to follow symbolic links
+    /// Set whether to follow symbolic links.
+    ///
+    /// When enabled, the scanner will follow symlinks and scan their targets.
+    /// When disabled (default), symlinks are skipped to avoid loops and
+    /// unexpected file system traversal.
+    ///
+    /// # Arguments
+    ///
+    /// * `follow` - true to follow symlinks, false to skip them
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use mcp_sentinel::utils::FileScanner;
+    ///
+    /// // Follow symlinks (be careful with loops!)
+    /// let scanner = FileScanner::new().follow_symlinks(true);
+    ///
+    /// // Skip symlinks (default, safer)
+    /// let safe_scanner = FileScanner::new().follow_symlinks(false);
+    /// ```
     pub fn follow_symlinks(mut self, follow: bool) -> Self {
         self.follow_symlinks = follow;
         self
     }
 
-    /// Set maximum directory depth
+    /// Set maximum directory traversal depth.
+    ///
+    /// Limits how deep into the directory tree the scanner will go.
+    /// None means unlimited depth (default).
+    ///
+    /// # Arguments
+    ///
+    /// * `depth` - Maximum depth (None for unlimited)
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use mcp_sentinel::utils::FileScanner;
+    ///
+    /// // Scan only 3 levels deep
+    /// let shallow = FileScanner::new().max_depth(Some(3));
+    ///
+    /// // Unlimited depth (default)
+    /// let deep = FileScanner::new().max_depth(None);
+    /// ```
     pub fn max_depth(mut self, depth: Option<usize>) -> Self {
         self.max_depth = depth;
         self
     }
 
-    /// Discover files in a directory
+    /// Discover files in a directory.
+    ///
+    /// Recursively walks the directory tree and returns all files that
+    /// match the scanner's configuration (size limits, binary detection, etc.).
+    ///
+    /// # Arguments
+    ///
+    /// * `path` - Root directory to scan
+    ///
+    /// # Returns
+    ///
+    /// A vector of discovered files with metadata.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if:
+    /// - The path doesn't exist
+    /// - Permission denied
+    /// - I/O errors during traversal
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use mcp_sentinel::utils::FileScanner;
+    /// use std::path::Path;
+    ///
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let scanner = FileScanner::new();
+    /// let files = scanner.discover_files(Path::new("./src"))?;
+    ///
+    /// println!("Found {} files", files.len());
+    /// for file in files {
+    ///     println!("  {}", file.path.display());
+    /// }
+    /// # Ok(())
+    /// # }
+    /// ```
     pub fn discover_files(&self, path: &Path) -> Result<Vec<DiscoveredFile>> {
         let mut files = Vec::new();
 
@@ -119,7 +355,42 @@ impl FileScanner {
         Ok(files)
     }
 
-    /// Discover files matching specific patterns
+    /// Discover files matching specific patterns.
+    ///
+    /// Like `discover_files()`, but filters results to only files matching
+    /// the provided glob patterns.
+    ///
+    /// # Arguments
+    ///
+    /// * `path` - Root directory to scan
+    /// * `patterns` - Glob patterns to match (e.g., "*.py", "config.*")
+    ///
+    /// # Pattern Syntax
+    ///
+    /// - `*.py` - All Python files
+    /// - `test_*.rs` - Rust test files
+    /// - `*.json` - All JSON files
+    /// - `config.*` - Files named "config" with any extension
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// use mcp_sentinel::utils::FileScanner;
+    /// use std::path::Path;
+    ///
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let scanner = FileScanner::new();
+    /// let patterns = vec!["*.py".to_string(), "*.js".to_string()];
+    ///
+    /// let files = scanner.discover_files_with_patterns(
+    ///     Path::new("./src"),
+    ///     &patterns
+    /// )?;
+    ///
+    /// println!("Found {} matching files", files.len());
+    /// # Ok(())
+    /// # }
+    /// ```
     pub fn discover_files_with_patterns(
         &self,
         path: &Path,
@@ -163,7 +434,18 @@ impl Default for FileScanner {
     }
 }
 
-/// Check if a file is binary by reading first few bytes
+/// Check if a file is binary by reading first few bytes.
+///
+/// Reads the first 8KB of the file and checks for null bytes.
+/// If more than 1% of bytes are null, the file is considered binary.
+///
+/// # Algorithm
+///
+/// 1. Read first 8192 bytes
+/// 2. Count null bytes (0x00)
+/// 3. If >1% are null, classify as binary
+///
+/// This heuristic works well for most text vs binary detection.
 fn is_binary_file(path: &Path) -> bool {
     use std::fs::File;
     use std::io::Read;
@@ -191,19 +473,74 @@ fn is_binary_file(path: &Path) -> bool {
     null_percentage > 0.01
 }
 
-/// Read file contents as string
+/// Read file contents as a UTF-8 string.
+///
+/// # Arguments
+///
+/// * `path` - Path to the file to read
+///
+/// # Errors
+///
+/// Returns an error if:
+/// - File doesn't exist
+/// - Permission denied
+/// - File contains invalid UTF-8
+///
+/// # Examples
+///
+/// ```no_run
+/// use mcp_sentinel::utils::file::read_file_contents;
+/// use std::path::Path;
+///
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// let content = read_file_contents(Path::new("config.json"))?;
+/// println!("File size: {} bytes", content.len());
+/// # Ok(())
+/// # }
+/// ```
 pub fn read_file_contents(path: &Path) -> Result<String> {
     Ok(std::fs::read_to_string(path)?)
 }
 
-/// Get file extension
+/// Get file extension in lowercase.
+///
+/// Returns the file extension (without the dot) in lowercase,
+/// or None if the file has no extension.
+///
+/// # Examples
+///
+/// ```
+/// use mcp_sentinel::utils::file::get_file_extension;
+/// use std::path::Path;
+///
+/// assert_eq!(get_file_extension(Path::new("file.py")), Some("py".to_string()));
+/// assert_eq!(get_file_extension(Path::new("FILE.RS")), Some("rs".to_string()));
+/// assert_eq!(get_file_extension(Path::new("noext")), None);
+/// ```
 pub fn get_file_extension(path: &Path) -> Option<String> {
     path.extension()
         .and_then(|s| s.to_str())
         .map(|s| s.to_lowercase())
 }
 
-/// Check if file is likely source code
+/// Check if file is likely source code.
+///
+/// Returns true if the file extension matches known source code extensions.
+///
+/// Recognized extensions: py, js, ts, tsx, jsx, rs, go, java, c, cpp, h, hpp,
+/// cs, rb, php, swift, kt, scala, clj, sh, bash, zsh
+///
+/// # Examples
+///
+/// ```
+/// use mcp_sentinel::utils::file::is_source_file;
+/// use std::path::Path;
+///
+/// assert!(is_source_file(Path::new("main.py")));
+/// assert!(is_source_file(Path::new("app.rs")));
+/// assert!(!is_source_file(Path::new("README.md")));
+/// assert!(!is_source_file(Path::new("data.json")));
+/// ```
 pub fn is_source_file(path: &Path) -> bool {
     const SOURCE_EXTENSIONS: &[&str] = &[
         "py", "js", "ts", "tsx", "jsx", "rs", "go", "java", "c", "cpp", "h", "hpp",
@@ -215,7 +552,25 @@ pub fn is_source_file(path: &Path) -> bool {
         .unwrap_or(false)
 }
 
-/// Check if file is likely a config file
+/// Check if file is likely a configuration file.
+///
+/// Returns true if the file extension or name matches known config file patterns.
+///
+/// Recognized extensions: json, yaml, yml, toml, ini, conf, cfg
+/// Recognized names: .env, dockerfile, makefile, rakefile
+///
+/// # Examples
+///
+/// ```
+/// use mcp_sentinel::utils::file::is_config_file;
+/// use std::path::Path;
+///
+/// assert!(is_config_file(Path::new("config.json")));
+/// assert!(is_config_file(Path::new("settings.yaml")));
+/// assert!(is_config_file(Path::new(".env")));
+/// assert!(is_config_file(Path::new("Dockerfile")));
+/// assert!(!is_config_file(Path::new("main.py")));
+/// ```
 pub fn is_config_file(path: &Path) -> bool {
     const CONFIG_EXTENSIONS: &[&str] = &["json", "yaml", "yml", "toml", "ini", "conf", "cfg"];
     const CONFIG_NAMES: &[&str] = &[".env", "dockerfile", "makefile", "rakefile"];
