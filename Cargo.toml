@@ -38,11 +38,11 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 serde_yaml = "0.9"
 
-# AI Analysis
-reqwest = { version = "0.11", features = ["json"] }
-async-openai = "0.20"
-# anthropic-sdk = "0.1"  # Note: Will need to verify actual crate name
-# ollama-rs = "0.1"      # Note: Will need to verify actual crate name
+# AI Analysis (Phase 2.0 - Multi-Provider Support)
+reqwest = { version = "0.11", features = ["json", "stream"] }
+async-openai = "0.20"              # OpenAI GPT-3.5/4
+async-trait = "0.1"                 # Async trait support for providers
+futures = "0.3"                     # Async utilities
 
 # Output Generation
 crossterm = "0.27"
