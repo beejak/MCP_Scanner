@@ -120,8 +120,26 @@ pub fn save_app_config(config: &AppConfig, explicit_path: Option<String>) -> Res
 
 /// Load ScanConfig from a specific file
 fn load_scan_config_from_file(path: &str) -> Result<ScanConfig> {
-    let contents = fs::read_to_string(path)
-        .with_context(|| format!("Failed to read config file: {}", path))?;
+    // Read file with detailed error handling
+    let contents = match fs::read_to_string(path) {
+        Ok(c) => c,
+        Err(e) => {
+            // Provide specific error message based on error kind
+            let reason = match e.kind() {
+                std::io::ErrorKind::NotFound => "File not found",
+                std::io::ErrorKind::PermissionDenied => "Permission denied",
+                std::io::ErrorKind::InvalidData => "File contains invalid UTF-8",
+                _ => "I/O error",
+            };
+            anyhow::bail!("Failed to load config from '{}': {}", path, reason);
+        }
+    };
+
+    // Handle empty config file
+    if contents.trim().is_empty() {
+        debug!("Config file '{}' is empty, using defaults", path);
+        return Ok(ScanConfig::default());
+    }
 
     // Try to parse as AppConfig first (which contains scan config)
     if let Ok(app_config) = serde_yaml::from_str::<AppConfig>(&contents) {
@@ -133,8 +151,19 @@ fn load_scan_config_from_file(path: &str) -> Result<ScanConfig> {
     }
 
     // Fall back to parsing as ScanConfig directly
-    serde_yaml::from_str(&contents)
-        .with_context(|| format!("Failed to parse config file as YAML: {}", path))
+    match serde_yaml::from_str::<ScanConfig>(&contents) {
+        Ok(config) => Ok(config),
+        Err(e) => {
+            // Extract line number from serde_yaml error if available
+            let error_msg = format!("{}", e);
+            let line_info = if error_msg.contains("line") {
+                error_msg.clone()
+            } else {
+                format!("Invalid YAML syntax: {}", error_msg)
+            };
+            anyhow::bail!("Failed to load config from '{}': {}", path, line_info);
+        }
+    }
 }
 
 /// Load AppConfig from a specific file
