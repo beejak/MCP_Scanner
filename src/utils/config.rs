@@ -22,8 +22,7 @@ pub fn load_scan_config(explicit_path: Option<String>) -> Result<ScanConfig> {
     // Try explicit path first
     if let Some(path) = explicit_path {
         debug!("Loading scan config from explicit path: {}", path);
-        return load_scan_config_from_file(&path)
-            .with_context(|| format!("Failed to load config from '{}'", path));
+        return load_scan_config_from_file(&path);
     }
 
     // Try project config
@@ -52,7 +51,7 @@ pub fn load_scan_config(explicit_path: Option<String>) -> Result<ScanConfig> {
         }
     }
 
-    // Use defaults
+    // Use defaults silently (this is expected behavior)
     debug!("No config file found, using default scan configuration");
     Ok(ScanConfig::default())
 }
