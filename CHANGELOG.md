@@ -7,29 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Planned for Phase 2 (v1.1.0)
-- Tree-sitter code parsing
-- Semgrep integration
-- AI analysis engine (OpenAI, Anthropic, Ollama)
-- HTML report generation
-- GitHub repository scanning
+### Planned for Phase 1.6 (v1.6.0)
+- SARIF output format
 - Configuration file support
-- PII detection
-- Toxic flow analysis
+- MCP configuration scanning
+- Progress indicators
+- Enhanced exit codes
 
-### Planned for Phase 3 (v1.2.0)
+### Planned for Phase 2.1 (v2.1.0)
+- Integration test suite (24 tests)
+- Performance benchmark tracking
+- Docker image
+- Pre-commit hooks
+- GitHub Action template
+
+### Planned for Phase 3 (v3.0.0)
 - Runtime proxy engine
 - Guardrails enforcement
 - Web dashboard
 - Real-time monitoring
 - Rug pull detection
-
-### Planned for Phase 4 (v2.0.0)
-- PDF report generation
-- SARIF output format
-- Whitelist management
-- Performance optimizations
-- Multi-language support (i18n)
 
 ## [1.0.0] - 2025-10-25
 
