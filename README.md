@@ -299,7 +299,9 @@ SEVERITY BREAKDOWN:
 Total: 29 vulnerabilities detected
 ```
 
-**[📄 View full terminal output](docs/samples/terminal_output_comprehensive.txt)** (200+ lines with detailed vulnerability cards)
+**View full output:**
+- [📄 Terminal output (200+ lines)](docs/samples/terminal_output_comprehensive.txt)
+- [🔗 Direct GitHub link](https://github.com/beejak/MCP_Scanner/blob/main/docs/samples/terminal_output_comprehensive.txt)
 
 </details>
 
@@ -392,9 +394,17 @@ For CI/CD integration and programmatic analysis:
 }
 ```
 
-**[📄 View full JSON example](docs/samples/scan_results.json)** (Complete structure with 5+ vulnerabilities)
+**View full output:**
+- [📄 JSON example (complete structure)](docs/samples/scan_results.json)
+- [🔗 Direct GitHub link](https://github.com/beejak/MCP_Scanner/blob/main/docs/samples/scan_results.json)
 
 </details>
+
+---
+
+### 📂 Browse All Samples
+
+**[📁 View samples directory](docs/samples/)** with index and direct links to all examples.
 
 ---
 
