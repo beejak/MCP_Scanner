@@ -127,10 +127,12 @@ MCP Sentinel is a next-generation security scanner for Model Context Protocol (M
 
 ```bash
 # Pull the image
-docker pull ghcr.io/beejak/mcp-sentinel:2.5.0
+docker pull ghcr.io/beejak/mcp-sentinel:2.6.0
 
-# Run a scan (mounting current directory)
-docker run --rm -v $(pwd):/workspace ghcr.io/beejak/mcp-sentinel:2.5.0 scan /workspace
+# Run a scan with threat intelligence (mounting current directory)
+docker run --rm -v $(pwd):/workspace \
+  -e NVD_API_KEY="${NVD_API_KEY}" \
+  ghcr.io/beejak/mcp-sentinel:2.6.0 scan /workspace --threat-intel
 
 # Or use docker-compose for complex workflows
 docker-compose run --rm mcp-sentinel scan /workspace --enable-semgrep
@@ -143,8 +145,8 @@ docker-compose run --rm mcp-sentinel scan /workspace --enable-semgrep
 **📦 Binary Installation (Fastest native performance)**
 
 ```bash
-# Download v2.5.0 binary
-wget https://github.com/beejak/MCP_Scanner/releases/download/v2.5.0/mcp-sentinel-linux-x86_64
+# Download v2.6.0 binary
+wget https://github.com/beejak/MCP_Scanner/releases/download/v2.6.0/mcp-sentinel-linux-x86_64
 chmod +x mcp-sentinel-linux-x86_64
 sudo mv mcp-sentinel-linux-x86_64 /usr/local/bin/mcp-sentinel
 ```
@@ -160,11 +162,13 @@ cargo install mcp-sentinel
 ```bash
 git clone https://github.com/beejak/MCP_Scanner
 cd MCP_Scanner
-git checkout v2.5.0
+git checkout v2.6.0
 cargo build --release
 ```
 
-### 🎯 v2.5.0 Feature Showcase
+**[📖 Detailed Installation Guide](INSTALLATION.md)** - Platform-specific instructions, troubleshooting, configuration
+
+### 🎯 v2.6.0 Feature Showcase
 
 **🌳 Semantic Analysis** (Automatic for Python/JS/TS/Go):
 ```bash
