@@ -2,8 +2,8 @@
 
 pub mod config;
 pub mod file;
+pub mod git;
 
 // Phase 2+ utilities
-// pub mod git;
 // pub mod http;
 // pub mod crypto;

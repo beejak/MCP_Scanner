@@ -27,7 +27,9 @@ pub mod detectors;
 pub mod engines;
 pub mod models;
 pub mod output;
+pub mod providers;
 pub mod storage;
+pub mod suppression;
 pub mod utils;
 
 // Re-export common types
