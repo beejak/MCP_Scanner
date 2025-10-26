@@ -55,6 +55,31 @@ Phase 2.5 brings advanced static analysis and enterprise reporting to MCP Sentin
 
 ---
 
+## 🔍 Logging & Observability
+
+Phase 2.5 includes comprehensive structured logging throughout all new modules:
+
+- **Tracing Framework**: Using `tracing` crate with DEBUG, INFO, and WARN levels
+- **Performance Metrics**: Operation timing for all major operations (AST parsing, Semgrep scans, HTML generation, Git clones)
+- **Progress Visibility**: Real-time feedback during long-running operations
+- **Diagnostic Support**: Debug-level logging for troubleshooting (command execution, parsing, file operations)
+- **Graceful Degradation**: Warning logs for optional features (Semgrep not installed, Git not available)
+
+**15 Strategic Logging Points Added**:
+- Semantic Analysis (5 points): Parser initialization, per-language analysis with timing
+- Semgrep Integration (4 points): Engine init, availability checks, scan execution with metrics
+- HTML Generation (1 point): Report generation with size and timing
+- GitHub Scanning (4 points): URL parsing, cloning with timing, availability checks
+- Tool Analysis (1 point): MCP tool description analysis with issue counts
+
+**Why This Matters**:
+- **Production Debugging**: Diagnose issues in deployed environments
+- **Performance Monitoring**: Identify bottlenecks in scan operations
+- **User Visibility**: Understand scanner progress during long operations
+- **CI/CD Integration**: Better log aggregation for automated workflows
+
+---
+
 ## 📊 Performance Improvements
 
 | Metric | v2.0.0 (Phase 2.0) | v2.5.0 (Phase 2.5) | Change | Impact |
