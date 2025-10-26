@@ -54,6 +54,7 @@ use crate::models::{
 use anyhow::{Context, Result};
 use std::collections::{HashMap, HashSet};
 use tree_sitter::{Language, Node, Parser, Query, QueryCursor, Tree};
+use tracing::{debug, info};
 
 extern "C" {
     fn tree_sitter_python() -> Language;
