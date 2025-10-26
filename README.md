@@ -25,7 +25,7 @@ MCP Sentinel is a next-generation security scanner for Model Context Protocol (M
 
 **Performance:** Same blazing speed (7.8s for 1000 files), now with 85% more coverage when all engines are enabled.
 
-**[📥 Download v2.5.0](https://github.com/beejak/MCP_Scanner/releases/tag/v2.5.0)** | **[📖 Read Full Release Notes](https://github.com/beejak/MCP_Scanner/releases/tag/v2.5.0)** | **[🚀 View Roadmap](#-implementation-status)**
+**[📥 Download v2.5.0](https://github.com/beejak/MCP_Scanner/releases/tag/v2.5.0)** | **[📖 Release Notes](https://github.com/beejak/MCP_Scanner/releases/tag/v2.5.0)** | **[⚡ Command Cheat Sheet](docs/CHEATSHEET.md)** | **[🚀 Roadmap](#-implementation-status)**
 
 ---
 
