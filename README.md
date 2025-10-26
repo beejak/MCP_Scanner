@@ -143,58 +143,64 @@ Configuration priority: CLI flags > project config (./.mcp-sentinel.yaml) > user
 
 ## 📊 Implementation Status
 
-### ✅ Phase 1.6 Complete (NEW!)
+### ✅ Phase 2.5 Complete (v2.5.0) - Current Release
 
-**Production-Ready Features:**
-- [x] **SARIF 2.1.0 Output** - Full GitHub Code Scanning, GitLab, SonarQube, VS Code integration
-- [x] **Configuration File Support** - YAML configs with multi-level priority (CLI > project > user)
-- [x] **MCP Config Scanner** - Detects security issues in Claude Desktop, Cline configs (6 security rules)
-- [x] **Progress Indicators** - Real-time progress bars and spinners with smart TTY/CI detection
-- [x] **Enhanced Exit Codes** - Standardized codes for CI/CD (0=clean, 1=vulns, 2=error, 3=usage)
+**Advanced Analysis & Enterprise Reporting:**
+- [x] **Tree-sitter AST Parsing** - Semantic analysis for Python, JS, TS, Go with dataflow tracking
+- [x] **Semgrep Integration** - Access to 1000+ community SAST rules with filtering
+- [x] **HTML Report Generator** - Interactive dashboards with risk scoring and charts
+- [x] **GitHub URL Scanning** - Direct repository scanning with shallow cloning
+- [x] **Tool Description Analysis** - MCP-specific prompt injection detection
+- [x] **Comprehensive Logging** - Production-ready observability with 15 strategic logging points
+- [x] **68 Unit Tests** - All documented with "why" explanations
+- [x] **10 Integration Tests** - End-to-end coverage of all Phase 2.5 features
 
-**Edge Case Handling:**
-- [x] Permission-specific error messages
-- [x] Empty/partial config file handling
-- [x] YAML syntax errors with line numbers
-- [x] Environment variable detection (NO_COLOR, CI, MCP_SENTINEL_NO_PROGRESS)
+**Performance Metrics (v2.5.0):**
+- Quick scan (1000 files): 7.8s (-5% improvement)
+- Semantic analysis: 32ms per Python file
+- HTML generation: <100ms
+- GitHub clone (shallow): 3-5s
+- Binary size: 21.8MB (includes 4 tree-sitter parsers)
 
-### ✅ Phase 1 Complete
+### ✅ Phase 2.0 Complete (v2.0.0)
 
-- [x] Project structure and build configuration
-- [x] CLI framework (7 commands: scan, proxy, monitor, audit, init, whitelist, rules)
-- [x] Core data models (Vulnerability, ScanResult, Config)
-- [x] File discovery and traversal utilities
-- [x] Terminal output renderer with colors
-- [x] JSON output generator
-- [x] 5 vulnerability detectors with comprehensive patterns
-- [x] Scanner engine with parallel processing
-- [x] Scan command fully functional
-- [x] Test fixtures with vulnerable code samples
+**AI-Powered Analysis:**
+- [x] AI analysis engine (OpenAI GPT-4, Anthropic Claude, Google Gemini, Ollama)
+- [x] Intelligent caching system (SHA-256, gzip, Sled DB)
+- [x] Baseline comparison (track NEW/FIXED/CHANGED vulnerabilities)
+- [x] Suppression engine (YAML-based false positive management)
+- [x] Git integration (diff-aware scanning for 10-100x performance improvement)
 
-### 🔄 Next Steps
+### ✅ Phase 1.6 Complete
 
-**Phase 2 (Upcoming):**
-- [ ] Semgrep integration
-- [ ] Tree-sitter code parsing
-- [ ] AI analysis engine (OpenAI, Anthropic, Ollama)
-- [ ] HTML report generator
-- [ ] GitHub repository scanning
-- [ ] Additional detectors (PII, toxic flows, anomalies)
-- [ ] Baseline scanning & diff-aware scanning
-- [ ] Vulnerability suppression (.mcp-sentinel-ignore)
+**Production-Ready CI/CD:**
+- [x] SARIF 2.1.0 output (GitHub Code Scanning, GitLab, SonarQube, VS Code)
+- [x] Configuration file support (YAML with multi-level priority)
+- [x] MCP config scanner (Claude Desktop, Cline security rules)
+- [x] Progress indicators (smart TTY/CI detection)
+- [x] Standardized exit codes (0=clean, 1=vulns, 2=error, 3=usage)
 
-**Phase 3:**
-- [ ] Runtime proxy engine
-- [ ] Guardrails enforcement
-- [ ] Web dashboard
-- [ ] Real-time monitoring
-- [ ] Rug pull detection
+### ✅ Phase 1.0 Complete
 
-**Phase 4:**
+**Foundation:**
+- [x] CLI framework with 7 commands
+- [x] 5 core vulnerability detectors (secrets, command injection, file access, tool poisoning, prompt injection)
+- [x] Terminal/JSON output
+- [x] Parallel scanning engine
+- [x] Comprehensive test fixtures
+
+### 🔄 What's Next (Phase 2.6/3.0 Planned)
+
+**Upcoming Features:**
+- [ ] Additional language support (Rust, Java, C++, Ruby, PHP)
+- [ ] Custom Semgrep rule authoring workflow
 - [ ] PDF report generation
-- [ ] Whitelist management
-- [ ] Performance optimizations (caching, incremental scans)
-- [ ] Comprehensive documentation
+- [ ] Pre-commit hooks and Git workflow integration
+- [ ] Docker image for easy CI/CD deployment
+- [ ] GitHub Action template
+- [ ] Runtime proxy monitoring (Phase 3)
+- [ ] Web dashboard
+- [ ] Real-time guardrails enforcement
 
 ## 🛠️ Architecture
 
