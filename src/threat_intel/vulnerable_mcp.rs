@@ -5,7 +5,7 @@
 
 use crate::models::vulnerability::{Vulnerability, VulnerabilityType};
 use anyhow::{Context, Result};
-use log::{debug, warn};
+use tracing::{debug, warn};
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
 
