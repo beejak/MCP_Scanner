@@ -12,6 +12,7 @@ pub mod nvd;
 use crate::models::vulnerability::Vulnerability;
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
+use tracing::{debug, info, warn};
 
 /// Threat intelligence enrichment data
 #[derive(Debug, Clone, Serialize, Deserialize)]
