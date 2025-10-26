@@ -31,7 +31,32 @@ MCP Sentinel is a next-generation security scanner for Model Context Protocol (M
 
 ## ⚡ Features
 
-### 🚀 Phase 2.5 - Advanced Analysis (NEW!)
+### 🧠 Phase 2.6 - Threat Intelligence & Supply Chain Security (LATEST!)
+
+- **🎯 Threat Intelligence Integration**: Real-world threat context for every vulnerability
+  - **VulnerableMCP API**: Real-time vulnerability database queries with CVE enrichment
+  - **MITRE ATT&CK Mapping**: Automatic technique mapping (20+ techniques across 8 tactics)
+  - **NVD Integration**: CVE data with CVSS v3.1 scores and incident tracking
+  - Identify actively exploited vulnerabilities and threat actor campaigns
+
+- **🔒 Supply Chain Security**: 11 patterns to detect package confusion attacks
+  - Malicious install scripts (preinstall, postinstall with remote code execution)
+  - Insecure HTTP dependencies and Git URLs
+  - Wildcard version specifiers and scoped package confusion
+  - Typosquatting detection
+
+- **🚀 Enhanced DOM XSS Detection**: Expanded from 1 to 5 comprehensive patterns
+  - innerHTML/outerHTML assignment detection
+  - document.write() and document.writeln() calls
+  - eval() and Function constructor detection
+  - Source-to-sink dataflow tracking
+
+- **🛡️ Node.js Security**: Context-aware Node.js-specific detection
+  - Weak RNG detection (Math.random() in security contexts)
+  - Path traversal in fs operations (readFile, writeFile, etc.)
+  - Security-sensitive context identification
+
+### 🚀 Phase 2.5 - Advanced Analysis
 
 - **🌳 Tree-sitter AST Parsing**: Semantic code analysis for Python, JavaScript, TypeScript, Go
   - Dataflow analysis tracking tainted variables from sources to sinks
