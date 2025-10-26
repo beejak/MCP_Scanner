@@ -726,15 +726,15 @@ impl SemanticEngine {
     ) -> Result<Vec<Vulnerability>> {
         let mut vulnerabilities = Vec::new();
 
-        // Query for innerHTML assignments
-        let query_str = r#"
+        // 1. innerHTML assignments
+        let inner_html_query = r#"
             (assignment_expression
               left: (member_expression
                 property: (property_identifier) @prop (#eq? @prop "innerHTML")))
         "#;
 
-        let query = Query::new(unsafe { tree_sitter_javascript() }, query_str)
-            .context("Failed to create XSS query")?;
+        let query = Query::new(unsafe { tree_sitter_javascript() }, inner_html_query)
+            .context("Failed to create innerHTML XSS query")?;
 
         let mut cursor = QueryCursor::new();
         let matches = cursor.matches(&query, tree.root_node(), code.as_bytes());
@@ -744,10 +744,10 @@ impl SemanticEngine {
                 let node = capture.node;
                 let start_point = node.start_position();
 
-                let vuln = Vulnerability {
-                    id: format!("SEMANTIC-XSS-{}", start_point.row + 1),
-                    title: "Cross-Site Scripting (XSS) via innerHTML".to_string(),
-                    description: "Detected innerHTML assignment which can lead to XSS if user input is not properly escaped.".to_string(),
+                vulnerabilities.push(Vulnerability {
+                    id: format!("SEMANTIC-XSS-INNERHTML-{}", start_point.row + 1),
+                    title: "DOM-based XSS via innerHTML".to_string(),
+                    description: "Detected innerHTML assignment which can execute malicious scripts if user input is not properly escaped.".to_string(),
                     severity: Severity::High,
                     vuln_type: VulnerabilityType::XssVulnerability,
                     location: Some(Location {
@@ -756,13 +756,165 @@ impl SemanticEngine {
                         column: Some(start_point.column + 1),
                     }),
                     code_snippet: Some(node.utf8_text(code.as_bytes()).unwrap_or("").to_string()),
-                    impact: Some("An attacker can inject malicious scripts that execute in victim's browser.".to_string()),
-                    remediation: Some("Use textContent instead of innerHTML, or properly sanitize input with DOMPurify.".to_string()),
+                    impact: Some("Attacker can inject malicious scripts that execute in victim's browser with full access to page context.".to_string()),
+                    remediation: Some("Use textContent instead of innerHTML for plain text. If HTML is needed, sanitize with DOMPurify.".to_string()),
                     confidence: 0.75,
                     evidence: None,
-                };
+                });
+            }
+        }
 
-                vulnerabilities.push(vuln);
+        // 2. outerHTML assignments
+        let outer_html_query = r#"
+            (assignment_expression
+              left: (member_expression
+                property: (property_identifier) @prop (#eq? @prop "outerHTML")))
+        "#;
+
+        let query2 = Query::new(unsafe { tree_sitter_javascript() }, outer_html_query)
+            .context("Failed to create outerHTML XSS query")?;
+
+        let matches2 = cursor.matches(&query2, tree.root_node(), code.as_bytes());
+
+        for match_ in matches2 {
+            for capture in match_.captures {
+                let node = capture.node;
+                let start_point = node.start_position();
+
+                vulnerabilities.push(Vulnerability {
+                    id: format!("SEMANTIC-XSS-OUTERHTML-{}", start_point.row + 1),
+                    title: "DOM-based XSS via outerHTML".to_string(),
+                    description: "Detected outerHTML assignment which can execute malicious scripts if user input is not properly escaped.".to_string(),
+                    severity: Severity::High,
+                    vuln_type: VulnerabilityType::XssVulnerability,
+                    location: Some(Location {
+                        file: file_path.to_string(),
+                        line: Some(start_point.row + 1),
+                        column: Some(start_point.column + 1),
+                    }),
+                    code_snippet: Some(node.utf8_text(code.as_bytes()).unwrap_or("").to_string()),
+                    impact: Some("Attacker can replace entire element with malicious HTML/JavaScript.".to_string()),
+                    remediation: Some("Avoid using outerHTML with user input. Use safe DOM manipulation methods.".to_string()),
+                    confidence: 0.75,
+                    evidence: None,
+                });
+            }
+        }
+
+        // 3. document.write() and document.writeln()
+        let doc_write_query = r#"
+            (call_expression
+              function: (member_expression
+                object: (identifier) @obj (#eq? @obj "document")
+                property: (property_identifier) @prop))
+        "#;
+
+        let query3 = Query::new(unsafe { tree_sitter_javascript() }, doc_write_query)
+            .context("Failed to create document.write XSS query")?;
+
+        let matches3 = cursor.matches(&query3, tree.root_node(), code.as_bytes());
+
+        for match_ in matches3 {
+            if let Some(prop_capture) = match_.captures.get(1) {
+                let prop_text = prop_capture.node.utf8_text(code.as_bytes()).unwrap_or("");
+
+                if prop_text == "write" || prop_text == "writeln" {
+                    let node = prop_capture.node;
+                    let start_point = node.start_position();
+
+                    vulnerabilities.push(Vulnerability {
+                        id: format!("SEMANTIC-XSS-DOCWRITE-{}", start_point.row + 1),
+                        title: "DOM-based XSS via document.write()".to_string(),
+                        description: format!(
+                            "Detected document.{}() which directly writes to the DOM. This can execute malicious scripts if user input is included.",
+                            prop_text
+                        ),
+                        severity: Severity::High,
+                        vuln_type: VulnerabilityType::XssVulnerability,
+                        location: Some(Location {
+                            file: file_path.to_string(),
+                            line: Some(start_point.row + 1),
+                            column: Some(start_point.column + 1),
+                        }),
+                        code_snippet: Some(node.utf8_text(code.as_bytes()).unwrap_or("").to_string()),
+                        impact: Some("Attacker can inject malicious HTML/JavaScript that executes immediately.".to_string()),
+                        remediation: Some("Avoid document.write(). Use createElement() and appendChild() for safe DOM manipulation.".to_string()),
+                        confidence: 0.80,
+                        evidence: None,
+                    });
+                }
+            }
+        }
+
+        // 4. eval() calls
+        let eval_query = r#"
+            (call_expression
+              function: (identifier) @func (#eq? @func "eval"))
+        "#;
+
+        let query4 = Query::new(unsafe { tree_sitter_javascript() }, eval_query)
+            .context("Failed to create eval XSS query")?;
+
+        let matches4 = cursor.matches(&query4, tree.root_node(), code.as_bytes());
+
+        for match_ in matches4 {
+            for capture in match_.captures {
+                let node = capture.node;
+                let start_point = node.start_position();
+
+                vulnerabilities.push(Vulnerability {
+                    id: format!("SEMANTIC-XSS-EVAL-{}", start_point.row + 1),
+                    title: "Code Injection via eval()".to_string(),
+                    description: "Detected eval() call which executes arbitrary JavaScript code. Extremely dangerous if user input reaches eval().".to_string(),
+                    severity: Severity::Critical,
+                    vuln_type: VulnerabilityType::CodeInjection,
+                    location: Some(Location {
+                        file: file_path.to_string(),
+                        line: Some(start_point.row + 1),
+                        column: Some(start_point.column + 1),
+                    }),
+                    code_snippet: Some(node.utf8_text(code.as_bytes()).unwrap_or("").to_string()),
+                    impact: Some("Attacker can execute arbitrary JavaScript code with full application privileges.".to_string()),
+                    remediation: Some("Never use eval(). Use JSON.parse() for JSON data, or refactor to avoid dynamic code execution.".to_string()),
+                    confidence: 0.90,
+                    evidence: None,
+                });
+            }
+        }
+
+        // 5. Function constructor
+        let function_constructor_query = r#"
+            (new_expression
+              constructor: (identifier) @func (#eq? @func "Function"))
+        "#;
+
+        let query5 = Query::new(unsafe { tree_sitter_javascript() }, function_constructor_query)
+            .context("Failed to create Function constructor query")?;
+
+        let matches5 = cursor.matches(&query5, tree.root_node(), code.as_bytes());
+
+        for match_ in matches5 {
+            for capture in match_.captures {
+                let node = capture.node;
+                let start_point = node.start_position();
+
+                vulnerabilities.push(Vulnerability {
+                    id: format!("SEMANTIC-XSS-FUNCTION-{}", start_point.row + 1),
+                    title: "Code Injection via Function Constructor".to_string(),
+                    description: "Detected Function constructor which creates functions from strings. Similar to eval(), this is dangerous with user input.".to_string(),
+                    severity: Severity::Critical,
+                    vuln_type: VulnerabilityType::CodeInjection,
+                    location: Some(Location {
+                        file: file_path.to_string(),
+                        line: Some(start_point.row + 1),
+                        column: Some(start_point.column + 1),
+                    }),
+                    code_snippet: Some(node.utf8_text(code.as_bytes()).unwrap_or("").to_string()),
+                    impact: Some("Attacker can inject arbitrary code that executes as a function.".to_string()),
+                    remediation: Some("Avoid Function constructor. Use named functions or arrow functions defined in code.".to_string()),
+                    confidence: 0.85,
+                    evidence: None,
+                });
             }
         }
 
