@@ -80,6 +80,22 @@ impl SuppressionAuditor {
         Ok(Self { log_path: path })
     }
 
+    /// Create a disabled auditor (no logging, graceful degradation)
+    ///
+    /// This is used when audit logging cannot be initialized (e.g., no home directory,
+    /// no write permissions). The auditor will accept log calls but won't write anything.
+    pub fn disabled() -> Self {
+        // Use /dev/null on Unix, nul on Windows
+        #[cfg(unix)]
+        let null_path = PathBuf::from("/dev/null");
+        #[cfg(windows)]
+        let null_path = PathBuf::from("nul");
+        #[cfg(not(any(unix, windows)))]
+        let null_path = PathBuf::from(".mcp-sentinel-audit-disabled.log");
+
+        Self { log_path: null_path }
+    }
+
     /// Get default log path (~/.mcp-sentinel/suppressions.log)
     fn default_log_path() -> Result<PathBuf> {
         let home = dirs::home_dir().context("Failed to determine home directory")?;
