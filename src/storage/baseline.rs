@@ -486,6 +486,48 @@ impl BaselineManager {
     fn hash_project_id(project_id: &str) -> String {
         format!("{:x}", Sha256::digest(project_id.as_bytes()))
     }
+
+    /// Generate a configuration fingerprint for baseline comparison
+    ///
+    /// # Purpose
+    ///
+    /// Config fingerprints ensure baseline comparisons are valid. If scan configuration
+    /// changes (e.g., different engines enabled, severity thresholds), the fingerprint
+    /// will differ, warning users that the comparison may not be apples-to-apples.
+    ///
+    /// # Arguments
+    ///
+    /// * `config_params` - Key-value pairs describing scan configuration
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use std::collections::HashMap;
+    /// use mcp_sentinel::storage::baseline::BaselineManager;
+    ///
+    /// let mut config = HashMap::new();
+    /// config.insert("mode".to_string(), "deep".to_string());
+    /// config.insert("engines".to_string(), "static,semantic,semgrep,ai".to_string());
+    /// config.insert("min_severity".to_string(), "medium".to_string());
+    ///
+    /// let fingerprint = BaselineManager::generate_config_fingerprint(&config);
+    /// // fingerprint is a SHA-256 hash of sorted config params
+    /// ```
+    ///
+    /// # Returns
+    ///
+    /// SHA-256 hash of configuration parameters (hex string, 64 characters)
+    pub fn generate_config_fingerprint(config_params: &HashMap<String, String>) -> String {
+        let mut sorted_params: Vec<(&String, &String)> = config_params.iter().collect();
+        sorted_params.sort_by_key(|(k, _)| k.as_str());
+
+        let mut fingerprint_input = String::new();
+        for (key, value) in sorted_params {
+            fingerprint_input.push_str(&format!("{}={};", key, value));
+        }
+
+        format!("{:x}", Sha256::digest(fingerprint_input.as_bytes()))
+    }
 }
 
 #[cfg(test)]
