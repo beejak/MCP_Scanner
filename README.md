@@ -484,6 +484,46 @@ For CI/CD integration and programmatic analysis:
 - Binary size: 21.8MB (includes 4 tree-sitter parsers)
 - Test coverage: 78 tests (68 unit + 10 integration)
 
+### ✅ Phase 2.6 Complete (v2.6.0) - LATEST RELEASE
+
+**Threat Intelligence & Advanced Detection:**
+- [x] **Threat Intelligence Integration** - 3 external intelligence sources
+  - VulnerableMCP API client - Real-time vulnerability database queries
+  - MITRE ATT&CK mapping - 9 vulnerability types mapped to 20+ techniques across 8 tactics
+  - NVD feed integration - CVE enrichment with CVSS v3.1 scores and incident tracking
+- [x] **Package Confusion Detection** - 11 supply chain attack patterns
+  - Malicious install scripts (preinstall, postinstall with remote code execution)
+  - Insecure dependencies (HTTP URLs, Git URLs, wildcard versions)
+  - Scoped package confusion attacks
+- [x] **Enhanced DOM XSS Detection** - Expanded from 1 to 5 patterns
+  - innerHTML/outerHTML assignment detection
+  - document.write() and document.writeln() calls
+  - eval() and Function constructor detection
+- [x] **Node.js Security** - 2 new Node.js-specific detectors
+  - Weak RNG detection (Math.random() in security contexts)
+  - Path traversal in fs operations (readFile, writeFile, etc.)
+- [x] **Integration Test Suite** - 18 comprehensive integration tests
+  - Baseline comparison, suppression engine, output formats
+  - All Phase 2.6 detectors validated end-to-end
+
+**Code Additions:**
+- 3,420 lines of production-ready code (2,500 production + 920 tests)
+- 18 new vulnerability patterns
+- 1,000+ lines of threat intelligence integration
+
+**Threat Intelligence Features:**
+```bash
+# Enrich vulnerabilities with threat intelligence
+mcp-sentinel scan ./server --threat-intel
+
+# Show MITRE ATT&CK mapping
+mcp-sentinel scan ./server --mitre-attack
+
+# Environment variables for enhanced features
+export VULNERABLE_MCP_API_KEY="your-key"  # Optional
+export NVD_API_KEY="your-key"             # Optional (50 requests/min vs 5/min)
+```
+
 ### ✅ Phase 2.0 Complete (v2.0.0)
 
 **AI-Powered Analysis:**
