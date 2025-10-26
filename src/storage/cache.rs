@@ -210,7 +210,7 @@ impl ScanCache {
             vulnerabilities: vulnerabilities.to_vec(),
             cached_at: SystemTime::now()
                 .duration_since(UNIX_EPOCH)
-                .unwrap()
+                .unwrap_or(Duration::from_secs(0))  // Graceful fallback
                 .as_secs(),
             ttl_seconds: ttl.as_secs(),
         };
