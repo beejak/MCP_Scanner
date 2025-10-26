@@ -409,4 +409,4 @@ Set environment variables to customize progress display:
 
 ---
 
-**Status**: Phase 1.6 Complete ✅ | Next: Phase 2 (AI Analysis & Advanced Detection)
+**Status**: Phase 2.5 Complete ✅ (v2.5.0) | [Latest Release](https://github.com/beejak/MCP_Scanner/releases/tag/v2.5.0) | Next: Phase 2.6/3.0 (Additional Languages & Runtime Monitoring)
