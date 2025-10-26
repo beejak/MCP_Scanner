@@ -100,6 +100,8 @@ impl ThreatIntelService {
 
     /// Enrich vulnerability with threat intelligence
     pub async fn enrich(&self, vulnerability: &Vulnerability) -> Result<ThreatIntelligence> {
+        debug!("Enriching vulnerability {} with threat intelligence", vulnerability.id);
+
         let mut intel = ThreatIntelligence {
             attack_techniques: vec![],
             cves: vec![],
@@ -109,24 +111,50 @@ impl ThreatIntelService {
         };
 
         // Get MITRE ATT&CK mapping
-        if let Ok(techniques) = self.mitre.map_vulnerability(vulnerability) {
-            intel.attack_techniques = techniques;
+        match self.mitre.map_vulnerability(vulnerability) {
+            Ok(techniques) => {
+                debug!("Mapped {} MITRE ATT&CK techniques for {}", techniques.len(), vulnerability.id);
+                intel.attack_techniques = techniques;
+            }
+            Err(e) => {
+                warn!("Failed to map MITRE ATT&CK techniques: {}", e);
+            }
         }
 
         // Check VulnerableMCP database
-        if let Ok(mcp_intel) = self.vulnerable_mcp.check_vulnerability(vulnerability).await {
-            intel.cves.extend(mcp_intel.cves);
-            intel.exploits.extend(mcp_intel.exploits);
-            intel.threat_actors.extend(mcp_intel.threat_actors);
-        }
-
-        // Enrich with NVD data if CVE exists
-        if let Some(cwe_id) = vulnerability.cwe_id {
-            if let Ok(nvd_intel) = self.nvd.get_cve_by_cwe(cwe_id).await {
-                intel.cves.extend(nvd_intel.cves);
-                intel.incidents.extend(nvd_intel.incidents);
+        match self.vulnerable_mcp.check_vulnerability(vulnerability).await {
+            Ok(mcp_intel) => {
+                debug!("VulnerableMCP found {} CVEs for {}", mcp_intel.cves.len(), vulnerability.id);
+                intel.cves.extend(mcp_intel.cves);
+                intel.exploits.extend(mcp_intel.exploits);
+                intel.threat_actors.extend(mcp_intel.threat_actors);
+            }
+            Err(e) => {
+                warn!("VulnerableMCP query failed: {}", e);
             }
         }
+
+        // Enrich with NVD data if CWE exists
+        if let Some(cwe_id) = vulnerability.cwe_id {
+            match self.nvd.get_cve_by_cwe(cwe_id).await {
+                Ok(nvd_intel) => {
+                    debug!("NVD found {} CVEs for CWE-{}", nvd_intel.cves.len(), cwe_id);
+                    intel.cves.extend(nvd_intel.cves);
+                    intel.incidents.extend(nvd_intel.incidents);
+                }
+                Err(e) => {
+                    warn!("NVD query failed for CWE-{}: {}", cwe_id, e);
+                }
+            }
+        }
+
+        info!(
+            "Enriched {} with {} techniques, {} CVEs, {} exploits",
+            vulnerability.id,
+            intel.attack_techniques.len(),
+            intel.cves.len(),
+            intel.exploits.len()
+        );
 
         Ok(intel)
     }
