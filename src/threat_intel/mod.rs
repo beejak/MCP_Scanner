@@ -163,12 +163,21 @@ impl ThreatIntelService {
 
     /// Batch enrich multiple vulnerabilities
     pub async fn enrich_batch(&self, vulnerabilities: &[Vulnerability]) -> Result<Vec<ThreatIntelligence>> {
+        info!("Batch enriching {} vulnerabilities with threat intelligence", vulnerabilities.len());
+
         let mut results = Vec::new();
+        let mut enriched_count = 0;
+        let mut failed_count = 0;
 
         for vuln in vulnerabilities {
             match self.enrich(vuln).await {
-                Ok(intel) => results.push(intel),
-                Err(_) => {
+                Ok(intel) => {
+                    results.push(intel);
+                    enriched_count += 1;
+                }
+                Err(e) => {
+                    warn!("Failed to enrich vulnerability {}: {}", vuln.id, e);
+                    failed_count += 1;
                     // If enrichment fails, return empty intel
                     results.push(ThreatIntelligence {
                         attack_techniques: vec![],
@@ -180,6 +189,8 @@ impl ThreatIntelService {
                 }
             }
         }
+
+        info!("Batch enrichment complete: {} succeeded, {} failed", enriched_count, failed_count);
 
         Ok(results)
     }
