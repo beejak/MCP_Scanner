@@ -28,7 +28,7 @@
 //!
 //! // First scan - create baseline
 //! let result = scan_project()?;
-//! manager.save_baseline("my-project", &result)?;
+//! manager.save_baseline("my-project", &result, None)?;
 //!
 //! // Second scan - compare against baseline
 //! let new_result = scan_project()?;
