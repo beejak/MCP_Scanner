@@ -232,7 +232,7 @@ impl Default for VulnerableMcpClient {
             client: reqwest::Client::builder()
                 .timeout(Duration::from_secs(10))
                 .build()
-                .unwrap(),
+                .expect("Failed to build default HTTP client - this should never fail"),
         }
     }
 }
