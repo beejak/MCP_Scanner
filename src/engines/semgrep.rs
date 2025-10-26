@@ -217,6 +217,9 @@ impl SemgrepEngine {
     /// - Runs in parallel with our other detectors
     pub async fn scan_directory(&self, directory: impl AsRef<Path>) -> Result<Vec<Vulnerability>> {
         let directory = directory.as_ref();
+        info!("Running Semgrep scan on directory: {}", directory.display());
+        debug!("Semgrep command: semgrep --config=auto --json --quiet {:?}", directory);
+        let start = std::time::Instant::now();
 
         // Build semgrep command
         let mut cmd = AsyncCommand::new(&self.semgrep_path);
@@ -236,8 +239,18 @@ impl SemgrepEngine {
         let semgrep_output: SemgrepOutput = serde_json::from_str(&stdout)
             .context("Failed to parse semgrep JSON output")?;
 
+        debug!("Semgrep raw findings: {} results, {} errors",
+            semgrep_output.results.len(), semgrep_output.errors.len());
+
         // Filter and convert results
         let vulnerabilities = self.convert_results(&semgrep_output)?;
+
+        info!(
+            "Semgrep scan completed in {:?}, found {} vulnerabilities (filtered from {} raw findings)",
+            start.elapsed(),
+            vulnerabilities.len(),
+            semgrep_output.results.len()
+        );
 
         Ok(vulnerabilities)
     }
