@@ -172,6 +172,9 @@ impl SemanticEngine {
         code: &str,
         file_path: &str,
     ) -> Result<Vec<Vulnerability>> {
+        debug!("Starting JavaScript semantic analysis on {}", file_path);
+        let start = std::time::Instant::now();
+
         let tree = self
             .javascript_parser
             .parse(code, None)
@@ -182,6 +185,13 @@ impl SemanticEngine {
         vulnerabilities.extend(self.detect_js_command_injection(&tree, code, file_path)?);
         vulnerabilities.extend(self.detect_js_xss(&tree, code, file_path)?);
         vulnerabilities.extend(self.detect_js_prototype_pollution(&tree, code, file_path)?);
+
+        info!(
+            "JavaScript analysis completed in {:?}, found {} vulnerabilities in {}",
+            start.elapsed(),
+            vulnerabilities.len(),
+            file_path
+        );
 
         Ok(vulnerabilities)
     }
