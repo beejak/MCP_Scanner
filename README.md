@@ -98,16 +98,41 @@ MCP Sentinel is a next-generation security scanner for Model Context Protocol (M
 
 ### Installation
 
+**🐳 Docker (Recommended - Zero Dependencies)**
+
 ```bash
-# Download v2.5.0 binary (fastest)
+# Pull the image
+docker pull ghcr.io/beejak/mcp-sentinel:2.5.0
+
+# Run a scan (mounting current directory)
+docker run --rm -v $(pwd):/workspace ghcr.io/beejak/mcp-sentinel:2.5.0 scan /workspace
+
+# Or use docker-compose for complex workflows
+docker-compose run --rm mcp-sentinel scan /workspace --enable-semgrep
+```
+
+**[📘 Complete Docker Guide](docs/DOCKER.md)** - CI/CD integration, Ollama AI setup, multi-service orchestration
+
+---
+
+**📦 Binary Installation (Fastest native performance)**
+
+```bash
+# Download v2.5.0 binary
 wget https://github.com/beejak/MCP_Scanner/releases/download/v2.5.0/mcp-sentinel-linux-x86_64
 chmod +x mcp-sentinel-linux-x86_64
 sudo mv mcp-sentinel-linux-x86_64 /usr/local/bin/mcp-sentinel
+```
 
-# Or using Cargo (when published)
+**🦀 Cargo Installation**
+
+```bash
 cargo install mcp-sentinel
+```
 
-# Or build from source
+**🛠️ Build from Source**
+
+```bash
 git clone https://github.com/beejak/MCP_Scanner
 cd MCP_Scanner
 git checkout v2.5.0
