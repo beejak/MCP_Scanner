@@ -230,6 +230,60 @@ Status: [ ] Pass / [ ] Fail / [ ] Blocked
 
 ---
 
+#### [RELEASE_PROCESS.md](./RELEASE_PROCESS.md) (~1,000 lines)
+**Purpose**: Complete release process documentation with performance delta tracking
+
+**Contents**:
+- Release Workflow Overview (8-phase process: dev → QA → PR → merge → tag → release → verify → announce)
+- Pre-Release Requirements:
+  - Quality assurance checklist
+  - Documentation updates
+  - Code sanitization & cleanup guide
+- Performance Delta Documentation:
+  - Metrics to track (scan time, throughput, memory, binary size)
+  - Benchmarking process
+  - Performance comparison table format
+  - AI provider cost tracking
+- Creating a Release:
+  - Git tagging workflow
+  - Annotated tag requirements
+  - GitHub Release creation
+  - Release description template
+- Post-Release Verification:
+  - Installation testing
+  - Documentation link updates
+  - Announcement protocol
+- Release Checklist Template (copy-paste for each release)
+- Automation Scripts (benchmarking, release creation, comparison)
+- Version Numbering Guidelines (semantic versioning)
+- Release Cadence Recommendations
+- Rollback Procedures
+
+**Release Tag Message Template**:
+```
+vX.Y.Z: Feature Name
+
+Major Features:
+- Feature 1 with "why" explanation
+- Feature 2 with "why" explanation
+
+Performance: X% faster, Y% less memory
+Documentation: X lines added
+Tests: X new tests
+
+Breaking Changes: None/List
+```
+
+**Why This Matters**: Standardized release process ensures:
+- Consistent quality across releases
+- Performance tracking shows continuous improvement
+- Users understand what changed and why to upgrade
+- Contributors can reproduce the process
+
+**When to Read**: Before creating any release, updating release automation, understanding versioning
+
+---
+
 ## 📖 Reading Guide
 
 ### For Users
