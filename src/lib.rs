@@ -23,6 +23,7 @@
 //! ```
 
 pub mod cli;
+pub mod config;
 pub mod detectors;
 pub mod engines;
 pub mod models;
