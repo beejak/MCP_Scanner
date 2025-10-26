@@ -614,18 +614,20 @@ export NVD_API_KEY="your-key"             # Optional (50 requests/min vs 5/min)
 - [x] Parallel scanning engine
 - [x] Comprehensive test fixtures
 
-### 🔄 What's Next (Phase 2.6/3.0 Planned)
+### 🔄 What's Next (Phase 3.0 Planned)
 
 **Upcoming Features:**
 - [ ] Additional language support (Rust, Java, C++, Ruby, PHP)
 - [ ] Custom Semgrep rule authoring workflow
-- [ ] PDF report generation
+- [ ] PDF report generation with executive summaries
 - [ ] Pre-commit hooks and Git workflow integration
-- [ ] Docker image for easy CI/CD deployment
-- [ ] GitHub Action template
+- [ ] Enhanced Docker image with multi-stage builds
+- [ ] Official GitHub Action template
 - [ ] Runtime proxy monitoring (Phase 3)
-- [ ] Web dashboard
+- [ ] Web dashboard with real-time monitoring
 - [ ] Real-time guardrails enforcement
+- [ ] Advanced threat intelligence correlation
+- [ ] Vulnerability trending and analytics
 
 ## 🛠️ Architecture
 
