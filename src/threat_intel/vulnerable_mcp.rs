@@ -152,17 +152,19 @@ impl VulnerableMcpClient {
 
     /// Parse API response into intelligence data
     fn parse_response(&self, response: ApiResponse) -> Result<VulnerableMcpIntel> {
-        if response.status != "success" || response.data.is_none() {
-            return Ok(VulnerableMcpIntel {
-                cves: vec![],
-                exploits: vec![],
-                threat_actors: vec![],
-                cvss_score: None,
-                exploit_available: false,
-            });
-        }
-
-        let data = response.data.unwrap();
+        // Return empty intel if no data available
+        let data = match response.data {
+            Some(d) if response.status == "success" => d,
+            _ => {
+                return Ok(VulnerableMcpIntel {
+                    cves: vec![],
+                    exploits: vec![],
+                    threat_actors: vec![],
+                    cvss_score: None,
+                    exploit_available: false,
+                });
+            }
+        };
         let mut intel = VulnerableMcpIntel {
             cves: vec![],
             exploits: vec![],
