@@ -179,7 +179,7 @@ async fn test_baseline_comparison_workflow() -> Result<()> {
             severity: Severity::Critical,
             vuln_type: VulnerabilityType::CodeInjection,
             location: Location {
-                file: PathBuf::from("src/auth.py"),
+                file: "src/auth.py".to_string(),
                 line: Some(10),
                 column: Some(5),
             },
@@ -198,7 +198,7 @@ async fn test_baseline_comparison_workflow() -> Result<()> {
             severity: Severity::High,
             vuln_type: VulnerabilityType::HardcodedSecret,
             location: Location {
-                file: PathBuf::from("src/config.py"),
+                file: "src/config.py".to_string(),
                 line: Some(5),
                 column: None,
             },
@@ -217,7 +217,7 @@ async fn test_baseline_comparison_workflow() -> Result<()> {
             severity: Severity::Critical,
             vuln_type: VulnerabilityType::CommandInjection,
             location: Location {
-                file: PathBuf::from("src/backup.py"),
+                file: "src/backup.py".to_string(),
                 line: Some(20),
                 column: Some(10),
             },
@@ -253,7 +253,7 @@ async fn test_baseline_comparison_workflow() -> Result<()> {
             severity: Severity::Critical, // CHANGED: Was High, now Critical
             vuln_type: VulnerabilityType::HardcodedSecret,
             location: Location {
-                file: PathBuf::from("src/config.py"),
+                file: "src/config.py".to_string(),
                 line: Some(5),
                 column: None,
             },
@@ -272,7 +272,7 @@ async fn test_baseline_comparison_workflow() -> Result<()> {
             severity: Severity::Critical,
             vuln_type: VulnerabilityType::CommandInjection,
             location: Location {
-                file: PathBuf::from("src/backup.py"),
+                file: "src/backup.py".to_string(),
                 line: Some(20),
                 column: Some(10),
             },
@@ -291,7 +291,7 @@ async fn test_baseline_comparison_workflow() -> Result<()> {
             severity: Severity::High,
             vuln_type: VulnerabilityType::PathTraversal,
             location: Location {
-                file: PathBuf::from("src/files.py"),
+                file: "src/files.py".to_string(),
                 line: Some(15),
                 column: Some(8),
             },
@@ -389,7 +389,7 @@ async fn test_suppression_engine_workflow() -> Result<()> {
             severity: Severity::Critical,
             vuln_type: VulnerabilityType::CodeInjection,
             location: Location {
-                file: PathBuf::from("src/auth.py"),
+                file: "src/auth.py".to_string(),
                 line: Some(10),
                 column: Some(5),
             },
@@ -408,7 +408,7 @@ async fn test_suppression_engine_workflow() -> Result<()> {
             severity: Severity::High,
             vuln_type: VulnerabilityType::HardcodedSecret,
             location: Location {
-                file: PathBuf::from("src/config.py"),
+                file: "src/config.py".to_string(),
                 line: Some(5),
                 column: None,
             },
@@ -427,7 +427,7 @@ async fn test_suppression_engine_workflow() -> Result<()> {
             severity: Severity::Critical,
             vuln_type: VulnerabilityType::CommandInjection,
             location: Location {
-                file: PathBuf::from("src/test/test_backup.py"),
+                file: "src/test/test_backup.py".to_string(),
                 line: Some(20),
                 column: Some(10),
             },
@@ -507,7 +507,7 @@ async fn test_json_output_format() -> Result<()> {
                 severity: Severity::High,
                 vuln_type: VulnerabilityType::CodeInjection,
                 location: Location {
-                    file: PathBuf::from("src/test.py"),
+                    file: "src/test.py".to_string(),
                     line: Some(10),
                     column: Some(5),
                 },
@@ -575,7 +575,7 @@ async fn test_sarif_output_format() -> Result<()> {
                 severity: Severity::Critical,
                 vuln_type: VulnerabilityType::CodeInjection,
                 location: Location {
-                    file: PathBuf::from("src/database.py"),
+                    file: "src/database.py".to_string(),
                     line: Some(42),
                     column: Some(12),
                 },
