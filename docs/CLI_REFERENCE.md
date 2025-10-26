@@ -460,6 +460,50 @@ Total: 22 vulnerabilities found
 }
 ```
 
+**HTML Output** (Phase 2.5):
+
+Interactive report with visual dashboards, perfect for stakeholders and security audits.
+
+**Features**:
+- **Risk Scoring**: 0-100 risk score with color-coded indicators
+- **Interactive Cards**: Click to expand vulnerability details
+- **Self-Contained**: Single HTML file with inline CSS/JavaScript (no external dependencies)
+- **Professional Design**: Enterprise-ready for presentations and compliance audits
+- **Filtering**: Client-side filtering by severity
+- **Summary Statistics**: Visual breakdown of vulnerability counts
+
+**Example Usage**:
+```bash
+# Generate HTML report
+mcp-sentinel scan ./server --output html --output-file report.html
+
+# Comprehensive scan with HTML output
+mcp-sentinel scan ./server \
+  --mode deep \
+  --enable-semgrep \
+  --llm-provider ollama \
+  --output html \
+  --output-file security-audit-2025-10-26.html
+
+# GitHub URL scanning with HTML report
+mcp-sentinel scan https://github.com/owner/mcp-server \
+  --enable-semgrep \
+  --output html \
+  --output-file third-party-audit.html
+```
+
+**Report Structure**:
+- Header with scan metadata (timestamp, target, duration)
+- Risk score dashboard with visual indicator (green/yellow/orange/red)
+- Severity breakdown chart (critical/high/medium/low counts)
+- Expandable vulnerability cards with:
+  - Severity badge
+  - Vulnerability type and description
+  - File location and line numbers
+  - Impact assessment
+  - Remediation recommendations
+  - CWE/CVE references (if applicable)
+
 **SARIF Output**: Conforms to [SARIF 2.1.0 specification](https://docs.oasis-open.org/sarif/sarif/v2.1.0/sarif-v2.1.0.html) for GitHub Code Scanning integration.
 
 ---
