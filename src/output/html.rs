@@ -63,6 +63,7 @@ use chrono::Utc;
 use handlebars::Handlebars;
 use serde_json::json;
 use std::collections::HashMap;
+use tracing::{debug, info};
 
 /// Generate HTML report from scan results.
 ///
@@ -74,16 +75,28 @@ use std::collections::HashMap;
 /// - All data (embedded JSON)
 /// - No external dependencies
 pub fn generate(result: &ScanResult) -> Result<String> {
+    info!("Generating HTML report for {} vulnerabilities", result.vulnerabilities.len());
+    debug!("Compiling Handlebars template");
+    let start = std::time::Instant::now();
+
     let mut handlebars = Handlebars::new();
 
     // Register template
     handlebars.register_template_string("report", HTML_TEMPLATE)?;
 
     // Prepare template data
+    debug!("Preparing template data with statistics and groupings");
     let data = prepare_template_data(result);
 
     // Render
     let html = handlebars.render("report", &data)?;
+
+    info!(
+        "HTML report generated in {:?}, size: {} bytes ({:.1} KB)",
+        start.elapsed(),
+        html.len(),
+        html.len() as f64 / 1024.0
+    );
 
     Ok(html)
 }
