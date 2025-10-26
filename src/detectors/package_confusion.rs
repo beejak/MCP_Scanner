@@ -10,9 +10,12 @@ use crate::models::vulnerability::{Location, Severity, Vulnerability, Vulnerabil
 use anyhow::{Context, Result};
 use serde_json::Value;
 use std::path::PathBuf;
+use tracing::{debug, info};
 
 /// Detect package confusion and malicious install scripts in package.json
 pub fn detect(content: &str, file_path: &str) -> Result<Vec<Vulnerability>> {
+    debug!("Scanning {} for package confusion and supply chain attacks", file_path);
+
     let mut vulnerabilities = Vec::new();
 
     // Parse JSON
