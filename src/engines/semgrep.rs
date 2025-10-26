@@ -146,7 +146,11 @@ impl SemgrepEngine {
 
     /// Create engine with custom filter configuration.
     pub fn with_config(filter_config: RuleFilterConfig) -> Result<Self> {
+        info!("Initializing Semgrep integration engine");
         let semgrep_path = Self::find_semgrep_binary()?;
+        info!("Semgrep binary found at: {}", semgrep_path.display());
+        debug!("Filter config: security_only={}, min_severity={:?}",
+            filter_config.security_only, filter_config.min_severity);
 
         Ok(Self {
             semgrep_path,
@@ -163,13 +167,21 @@ impl SemgrepEngine {
     /// - Continue with other detectors
     /// - Don't block scanning
     pub fn is_available(&self) -> Result<bool> {
+        debug!("Checking if Semgrep is available");
         let output = Command::new(&self.semgrep_path)
             .arg("--version")
             .output();
 
         match output {
-            Ok(output) if output.status.success() => Ok(true),
-            _ => Ok(false),
+            Ok(output) if output.status.success() => {
+                let version = String::from_utf8_lossy(&output.stdout);
+                info!("Semgrep is available: {}", version.trim());
+                Ok(true)
+            },
+            _ => {
+                warn!("Semgrep not available - skipping Semgrep analysis");
+                Ok(false)
+            },
         }
     }
 
