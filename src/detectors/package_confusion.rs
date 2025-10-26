@@ -43,6 +43,10 @@ pub fn detect(content: &str, file_path: &str) -> Result<Vec<Vulnerability>> {
         }
     }
 
+    if !vulnerabilities.is_empty() {
+        info!("Found {} supply chain vulnerabilities in {}", vulnerabilities.len(), file_path);
+    }
+
     Ok(vulnerabilities)
 }
 
