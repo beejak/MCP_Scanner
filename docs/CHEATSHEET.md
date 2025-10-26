@@ -7,18 +7,189 @@
 
 ## 📥 Installation
 
+### 🐳 Docker (Recommended - Zero Dependencies)
 ```bash
-# Download binary (fastest)
+# Pull image
+docker pull ghcr.io/beejak/mcp-sentinel:2.5.0
+
+# Quick test
+docker run --rm ghcr.io/beejak/mcp-sentinel:2.5.0 --version
+
+# Scan current directory
+docker run --rm -v $(pwd):/workspace ghcr.io/beejak/mcp-sentinel:2.5.0 scan /workspace
+```
+
+### 📦 Binary Installation
+```bash
+# Download binary (fastest native performance)
 wget https://github.com/beejak/MCP_Scanner/releases/download/v2.5.0/mcp-sentinel-linux-x86_64
 chmod +x mcp-sentinel-linux-x86_64
 sudo mv mcp-sentinel-linux-x86_64 /usr/local/bin/mcp-sentinel
-
-# Using Cargo
-cargo install mcp-sentinel
-
-# Verify installation
-mcp-sentinel --version
 ```
+
+### 🦀 Cargo Installation
+```bash
+cargo install mcp-sentinel
+```
+
+### ✅ Verify Installation
+```bash
+mcp-sentinel --version  # Binary/Cargo
+docker run --rm ghcr.io/beejak/mcp-sentinel:2.5.0 --version  # Docker
+```
+
+---
+
+## 🐳 Docker Usage
+
+### Basic Scans
+```bash
+# Scan current directory
+docker run --rm -v $(pwd):/workspace ghcr.io/beejak/mcp-sentinel:2.5.0 scan /workspace
+
+# Scan with Semgrep
+docker run --rm -v $(pwd):/workspace ghcr.io/beejak/mcp-sentinel:2.5.0 scan /workspace --enable-semgrep
+
+# Deep analysis with AI (requires Ollama)
+docker-compose --profile ai up -d ollama
+docker-compose --profile ai run --rm mcp-sentinel-deep
+
+# Scan GitHub URL
+docker run --rm ghcr.io/beejak/mcp-sentinel:2.5.0 scan https://github.com/owner/repo
+```
+
+### Generate Reports
+```bash
+# JSON output
+docker run --rm -v $(pwd):/workspace ghcr.io/beejak/mcp-sentinel:2.5.0 \
+  scan /workspace --output json --output-file /workspace/results.json
+
+# HTML report
+docker run --rm -v $(pwd):/workspace ghcr.io/beejak/mcp-sentinel:2.5.0 \
+  scan /workspace --output html --output-file /workspace/report.html
+
+# SARIF for CI/CD
+docker run --rm -v $(pwd):/workspace ghcr.io/beejak/mcp-sentinel:2.5.0 \
+  scan /workspace --output sarif --output-file /workspace/results.sarif
+```
+
+### Docker Compose Workflows
+```bash
+# Build image locally
+docker-compose build
+
+# Basic scan (uses default command)
+docker-compose run --rm mcp-sentinel scan /workspace
+
+# CI/CD mode (fail on high, JSON output)
+docker-compose run --rm mcp-sentinel-ci
+
+# Deep analysis with AI
+docker-compose --profile ai up -d ollama
+docker-compose --profile ai run --rm mcp-sentinel-deep
+
+# Interactive shell
+docker-compose run --rm --entrypoint /bin/bash mcp-sentinel
+
+# Clean up
+docker-compose down -v
+docker-compose --profile ai down -v  # Include AI services
+```
+
+### Environment Variables (Docker)
+```bash
+# Using .env file (recommended)
+cat > .env << 'EOF'
+RUST_LOG=debug
+MCP_SENTINEL_API_KEY=sk-...
+OPENAI_API_KEY=sk-...
+ANTHROPIC_API_KEY=sk-ant-...
+EOF
+
+docker-compose run --rm mcp-sentinel scan /workspace
+
+# Inline environment variables
+docker run --rm \
+  -v $(pwd):/workspace \
+  -e RUST_LOG=debug \
+  -e MCP_SENTINEL_API_KEY=sk-... \
+  ghcr.io/beejak/mcp-sentinel:2.5.0 \
+  scan /workspace --mode deep
+```
+
+### Docker + CI/CD
+```bash
+# GitHub Actions
+docker run --rm \
+  -v ${{ github.workspace }}:/workspace \
+  ghcr.io/beejak/mcp-sentinel:2.5.0 \
+  scan /workspace --fail-on high --output sarif --output-file /workspace/results.sarif
+
+# GitLab CI
+docker run --rm \
+  -v $(pwd):/workspace \
+  ghcr.io/beejak/mcp-sentinel:2.5.0 \
+  scan /workspace --enable-semgrep --fail-on high --output json --output-file /workspace/report.json
+
+# Jenkins Pipeline
+sh 'docker run --rm -v $WORKSPACE:/workspace ghcr.io/beejak/mcp-sentinel:2.5.0 scan /workspace --fail-on high'
+```
+
+### Advanced Docker Usage
+```bash
+# Scan multiple directories
+docker run --rm \
+  -v $(pwd)/server1:/server1:ro \
+  -v $(pwd)/server2:/server2:ro \
+  ghcr.io/beejak/mcp-sentinel:2.5.0 \
+  scan /server1 /server2
+
+# Custom config file
+docker run --rm \
+  -v $(pwd):/workspace \
+  -v $(pwd)/custom-config.yaml:/config.yaml:ro \
+  ghcr.io/beejak/mcp-sentinel:2.5.0 \
+  scan /workspace --config /config.yaml
+
+# Resource limits
+docker run --rm \
+  --cpus=2 \
+  --memory=2g \
+  -v $(pwd):/workspace \
+  ghcr.io/beejak/mcp-sentinel:2.5.0 \
+  scan /workspace
+
+# Run as specific user (match host UID)
+docker run --rm \
+  --user $(id -u):$(id -g) \
+  -v $(pwd):/workspace \
+  ghcr.io/beejak/mcp-sentinel:2.5.0 \
+  scan /workspace
+```
+
+### Docker Troubleshooting
+```bash
+# Check if image exists
+docker images | grep mcp-sentinel
+
+# Pull latest image
+docker pull ghcr.io/beejak/mcp-sentinel:latest
+
+# View container logs
+docker-compose logs mcp-sentinel
+
+# Check Ollama status
+docker-compose --profile ai ps
+curl http://localhost:11434/api/tags
+
+# Rebuild image (if Dockerfile changed)
+docker-compose build --no-cache
+
+# Remove old images
+docker rmi ghcr.io/beejak/mcp-sentinel:2.5.0
+```
+
+**📘 For complete Docker documentation:** [docs/DOCKER.md](DOCKER.md)
 
 ---
 
