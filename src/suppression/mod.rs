@@ -66,7 +66,7 @@ use tracing::{debug, info};
 
 pub use auditor::SuppressionAuditor;
 pub use matcher::SuppressionMatcher;
-pub use parser::{Suppression, SuppressionConfig};
+pub use parser::{Suppression, SuppressionConfig, SuppressionPattern, PatternType};
 
 /// Main suppression manager
 pub struct SuppressionManager {
