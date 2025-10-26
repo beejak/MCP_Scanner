@@ -94,6 +94,9 @@ impl SemanticEngine {
     /// Tree-sitter parsers are stateful and reusable. Initializing once
     /// and reusing across files is more efficient than creating per-file.
     pub fn new() -> Result<Self> {
+        info!("Initializing semantic analysis engine with Tree-sitter parsers");
+        debug!("Setting up parsers for Python, JavaScript, TypeScript, Go");
+
         let mut python_parser = Parser::new();
         python_parser
             .set_language(unsafe { tree_sitter_python() })
@@ -113,6 +116,8 @@ impl SemanticEngine {
         go_parser
             .set_language(unsafe { tree_sitter_go() })
             .context("Failed to set Go language")?;
+
+        info!("Semantic analysis engine initialized successfully");
 
         Ok(Self {
             python_parser,
