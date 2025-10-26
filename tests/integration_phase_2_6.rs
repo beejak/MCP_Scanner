@@ -137,8 +137,8 @@ export function generateToken() {
 AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE
 AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY
 DATABASE_URL=postgresql://user:password123@localhost:5432/db
-STRIPE_API_KEY=sk_live_51234567890abcdefghijklmnop
-OPENAI_API_KEY=sk-proj-1234567890abcdefghijklmnopqrstuvwxyz
+STRIPE_API_KEY=sk_test_EXAMPLE1234567890abcdefghijklmnop
+OPENAI_API_KEY=sk-proj-EXAMPLE1234567890abcdefghijklmnopqrstuvwxyz
 JWT_SECRET=super_secret_key_that_should_not_be_here
 "#;
     fs::write(base_path.join(".env"), secrets_file)?;
