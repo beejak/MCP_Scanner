@@ -743,8 +743,9 @@ jobs:
         run: |
           docker run --rm \
             -v ${{ github.workspace }}:/workspace \
-            ghcr.io/beejak/mcp-sentinel:2.5.0 \
-            scan /workspace --enable-semgrep --fail-on high --output sarif --output-file /workspace/results.sarif
+            -e NVD_API_KEY=${{ secrets.NVD_API_KEY }} \
+            ghcr.io/beejak/mcp-sentinel:2.6.0 \
+            scan /workspace --threat-intel --enable-semgrep --fail-on high --output sarif --output-file /workspace/results.sarif
 
       - name: Upload SARIF to GitHub Code Scanning
         uses: github/codeql-action/upload-sarif@v2
@@ -766,13 +767,15 @@ jobs:
 
       - name: Install MCP Sentinel
         run: |
-          wget https://github.com/beejak/MCP_Scanner/releases/download/v2.5.0/mcp-sentinel-linux-x86_64
+          wget https://github.com/beejak/MCP_Scanner/releases/download/v2.6.0/mcp-sentinel-linux-x86_64
           chmod +x mcp-sentinel-linux-x86_64
           sudo mv mcp-sentinel-linux-x86_64 /usr/local/bin/mcp-sentinel
 
-      - name: Run MCP Sentinel
+      - name: Run MCP Sentinel with Threat Intelligence
         run: |
-          mcp-sentinel scan . --output sarif --output-file results.sarif --fail-on high
+          mcp-sentinel scan . --threat-intel --output sarif --output-file results.sarif --fail-on high
+        env:
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
 
       - name: Upload SARIF to GitHub Code Scanning
         uses: github/codeql-action/upload-sarif@v2
