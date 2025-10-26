@@ -81,31 +81,44 @@ MCP Sentinel is a next-generation security scanner for Model Context Protocol (M
 cargo install mcp-sentinel
 
 # Or build from source
-git clone https://github.com/yourusername/MCP_Scanner
+git clone https://github.com/beejak/MCP_Scanner
 cd MCP_Scanner
+git checkout v2.5.0
 cargo build --release
 ```
 
 ### Basic Usage
 
 ```bash
-# Scan a local MCP server directory
+# Quick scan (automatic AST analysis for Python/JS/TS/Go)
 mcp-sentinel scan ./my-mcp-server
 
-# Scan with JSON output
-mcp-sentinel scan ./my-mcp-server --output json
+# Scan GitHub repository directly (no manual cloning!)
+mcp-sentinel scan https://github.com/owner/mcp-server --fail-on high
 
-# Generate SARIF output for GitHub Code Scanning
+# Scan specific branch or commit
+mcp-sentinel scan https://github.com/owner/mcp-server/tree/develop
+mcp-sentinel scan https://github.com/owner/mcp-server/commit/abc123
+
+# Enable Semgrep integration (requires: pip install semgrep)
+mcp-sentinel scan ./my-mcp-server --enable-semgrep
+
+# Generate HTML report for stakeholders
+mcp-sentinel scan ./my-mcp-server --output html --output-file report.html
+
+# Comprehensive multi-engine scan
+mcp-sentinel scan ./my-mcp-server \
+  --mode deep \
+  --enable-semgrep \
+  --llm-provider openai \
+  --output html \
+  --output-file audit-report.html
+
+# SARIF output for GitHub Code Scanning
 mcp-sentinel scan ./my-mcp-server --output sarif --output-file results.sarif
 
-# Fail CI/CD if high-severity issues found
+# Fail CI/CD on high-severity issues
 mcp-sentinel scan ./my-mcp-server --fail-on high
-
-# Use custom configuration file
-mcp-sentinel scan ./my-mcp-server --config my-config.yaml
-
-# Scan with minimum severity filter
-mcp-sentinel scan ./my-mcp-server --severity medium
 ```
 
 ### Configuration File
