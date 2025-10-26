@@ -31,7 +31,11 @@
 MCP Sentinel is a comprehensive security scanner for Model Context Protocol (MCP) servers. It combines:
 
 - **Static Analysis**: Pattern-based vulnerability detection (regex, AST, semantic analysis)
+- **Semantic Analysis**: Tree-sitter AST parsing for Python, JS, TS, Go (Phase 2.5)
+- **SAST Integration**: Semgrep integration with 1000+ community rules (Phase 2.5)
 - **AI Analysis**: LLM-powered contextual understanding (GPT-4, Claude, Gemini, Ollama)
+- **Enterprise Reporting**: HTML report generation with interactive dashboards (Phase 2.5)
+- **GitHub Scanning**: Direct repository URL scanning with shallow cloning (Phase 2.5)
 - **Runtime Monitoring**: Transparent proxy for live traffic inspection
 - **Continuous Scanning**: File watching with automatic rescans
 
