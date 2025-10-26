@@ -482,4 +482,20 @@ Set environment variables to customize progress display:
 
 ---
 
-**Status**: Phase 2.5 Complete ✅ (v2.5.0) | [Latest Release](https://github.com/beejak/MCP_Scanner/releases/tag/v2.5.0) | Next: Phase 2.6/3.0 (Additional Languages & Runtime Monitoring)
+## 🎯 Current Status
+
+<div align="center">
+
+### ✅ v2.5.0 Released - October 26, 2025
+
+**Production-Ready Enterprise Security Scanner**
+
+🌳 Semantic Analysis | 🔍 Semgrep Integration | 📊 HTML Reports | 🐙 GitHub Scanning | 🤖 AI Analysis
+
+**[📥 Download v2.5.0](https://github.com/beejak/MCP_Scanner/releases/tag/v2.5.0)** | **[📖 Documentation](docs/CLI_REFERENCE.md)** | **[🐛 Report Issues](https://github.com/beejak/MCP_Scanner/issues)** | **[⭐ Star on GitHub](https://github.com/beejak/MCP_Scanner)**
+
+---
+
+**Next Up:** Phase 2.6/3.0 - Additional language support (Rust, Java, C++), Runtime proxy monitoring, Docker image
+
+</div>
