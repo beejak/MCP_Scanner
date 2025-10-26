@@ -62,7 +62,7 @@ pub mod parser;
 use crate::models::Vulnerability;
 use anyhow::Result;
 use std::path::Path;
-use tracing::{debug, info};
+use tracing::{debug, info, warn};
 
 pub use auditor::SuppressionAuditor;
 pub use matcher::SuppressionMatcher;
