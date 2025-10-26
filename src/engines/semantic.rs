@@ -771,13 +771,114 @@ impl SemanticEngine {
 
     fn detect_js_prototype_pollution(
         &self,
-        _tree: &Tree,
-        _code: &str,
-        _file_path: &str,
+        tree: &Tree,
+        code: &str,
+        file_path: &str,
     ) -> Result<Vec<Vulnerability>> {
-        // TODO: Implement prototype pollution detection
-        // Looks for: obj[key] = value where key comes from user input
-        Ok(Vec::new())
+        let mut vulnerabilities = Vec::new();
+
+        // Query for computed member expressions (obj[key]) in assignment context
+        // This detects: obj[userInput] = value, which can pollute prototype if key is "__proto__", "constructor", etc.
+        let query_str = r#"
+            (assignment_expression
+              left: (subscript_expression
+                object: (_)
+                index: (_) @key))
+        "#;
+
+        let query = Query::new(unsafe { tree_sitter_javascript() }, query_str)
+            .context("Failed to create prototype pollution query")?;
+
+        let mut cursor = QueryCursor::new();
+        let matches = cursor.matches(&query, tree.root_node(), code.as_bytes());
+
+        for match_ in matches {
+            for capture in match_.captures {
+                let node = capture.node;
+                let key_text = node.utf8_text(code.as_bytes()).unwrap_or("");
+
+                // Check for dangerous prototype keys (both direct and variable references)
+                // Direct: obj["__proto__"], obj["constructor"], obj["prototype"]
+                // Variable: obj[userKey] - flag any computed access as potential risk
+                let is_dangerous = key_text.contains("__proto__")
+                    || key_text.contains("constructor")
+                    || key_text.contains("prototype")
+                    || !key_text.starts_with('"') && !key_text.starts_with('\''); // Variable key (not string literal)
+
+                if is_dangerous {
+                    let start_point = node.start_position();
+                    let parent_node = node.parent().and_then(|p| p.parent());
+
+                    let vuln = Vulnerability {
+                        id: format!("SEMANTIC-PROTO-{}", start_point.row + 1),
+                        title: "Potential Prototype Pollution Vulnerability".to_string(),
+                        description: "Detected object property assignment using computed key. If the key comes from user input, it can pollute Object.prototype with malicious properties (__proto__, constructor, prototype).".to_string(),
+                        severity: Severity::High,
+                        vuln_type: VulnerabilityType::PrototypePollution,
+                        location: Some(Location {
+                            file: file_path.to_string(),
+                            line: Some(start_point.row + 1),
+                            column: Some(start_point.column + 1),
+                        }),
+                        code_snippet: parent_node
+                            .map(|n| n.utf8_text(code.as_bytes()).unwrap_or(""))
+                            .or_else(|| Some(node.utf8_text(code.as_bytes()).unwrap_or("")))
+                            .map(|s| s.to_string()),
+                        impact: Some("Attackers can modify Object.prototype, affecting all objects in the application. This can lead to authentication bypass, privilege escalation, or denial of service.".to_string()),
+                        remediation: Some("Validate object keys against an allowlist. Use Object.create(null) for objects that store user data. Never allow __proto__, constructor, or prototype keys from user input.".to_string()),
+                        confidence: if key_text.contains("__proto__") || key_text.contains("constructor") { 0.90 } else { 0.70 },
+                        evidence: Some(format!("Computed property key: {}", key_text)),
+                    };
+
+                    vulnerabilities.push(vuln);
+                }
+            }
+        }
+
+        // Also detect direct __proto__ assignments: obj.__proto__ = value
+        let proto_query_str = r#"
+            (assignment_expression
+              left: (member_expression
+                property: (property_identifier) @prop (#eq? @prop "__proto__")))
+        "#;
+
+        let proto_query = Query::new(unsafe { tree_sitter_javascript() }, proto_query_str)
+            .context("Failed to create __proto__ assignment query")?;
+
+        let proto_matches = cursor.matches(&proto_query, tree.root_node(), code.as_bytes());
+
+        for match_ in proto_matches {
+            for capture in match_.captures {
+                let node = capture.node;
+                let start_point = node.start_position();
+                let parent_node = node.parent().and_then(|p| p.parent());
+
+                let vuln = Vulnerability {
+                    id: format!("SEMANTIC-PROTO-DIRECT-{}", start_point.row + 1),
+                    title: "Direct __proto__ Assignment (Prototype Pollution)".to_string(),
+                    description: "Detected direct assignment to __proto__ property. This directly pollutes the object's prototype chain.".to_string(),
+                    severity: Severity::Critical,
+                    vuln_type: VulnerabilityType::PrototypePollution,
+                    location: Some(Location {
+                        file: file_path.to_string(),
+                        line: Some(start_point.row + 1),
+                        column: Some(start_point.column + 1),
+                    }),
+                    code_snippet: parent_node
+                        .map(|n| n.utf8_text(code.as_bytes()).unwrap_or(""))
+                        .or_else(|| Some(node.utf8_text(code.as_bytes()).unwrap_or("")))
+                        .map(|s| s.to_string()),
+                    impact: Some("Direct prototype pollution allowing complete control over object prototypes. Critical security vulnerability.".to_string()),
+                    remediation: Some("Never assign to __proto__ directly. Use Object.setPrototypeOf() only with trusted values, or better yet, avoid prototype modification entirely.".to_string()),
+                    confidence: 0.95,
+                    evidence: Some("Direct __proto__ assignment detected".to_string()),
+                };
+
+                vulnerabilities.push(vuln);
+            }
+        }
+
+        Ok(vulnerabilities)
     }
 
     //
