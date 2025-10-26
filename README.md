@@ -199,6 +199,218 @@ scan:
 
 Configuration priority: CLI flags > project config (./.mcp-sentinel.yaml) > user config (~/.mcp-sentinel/config.yaml) > defaults
 
+---
+
+## 🎬 Visual Demonstrations & Sample Reports
+
+### 📹 Demo Videos (Coming Soon)
+
+We're creating GIF demonstrations of v2.5.0 features. See [GIF Recording Guide](docs/GIF_RECORDING_GUIDE.md) for details.
+
+**Planned demos:**
+- Quick scan with terminal output
+- GitHub URL scanning (no manual cloning!)
+- Semgrep integration (+40% coverage)
+- HTML report generation
+- Multi-engine comprehensive scan
+
+**Want to contribute?** Follow the [recording guide](docs/GIF_RECORDING_GUIDE.md) and submit a PR!
+
+---
+
+### 📊 Sample Terminal Output
+
+Here's what a comprehensive v2.5.0 scan looks like with all engines enabled:
+
+<details>
+<summary><b>🚀 Click to see full terminal output example</b> (Multi-engine scan with GitHub URL)</summary>
+
+```
+🛡️  MCP Sentinel v2.5.0 - Enterprise Security Scanner
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🚀 SCAN CONFIGURATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📂 Target: https://github.com/example-org/mcp-filesystem-server
+🔍 Mode: Deep Analysis
+🧠 LLM Provider: Ollama (llama3.2:8b)
+📊 Output: HTML Report (security-audit.html)
+
+🔬 Analysis Engines Enabled:
+  ✓ Static Analysis (Pattern Matching)
+  ✓ Semantic Analysis (Tree-sitter AST)
+  ✓ Semgrep SAST (1000+ Community Rules)
+  ✓ AI Analysis (Contextual Understanding)
+  ✓ Tool Description Analysis (MCP-Specific)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🌳 PHASE 1: REPOSITORY CLONING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🐙 Cloning https://github.com/example-org/mcp-filesystem-server...
+   ✓ Clone completed in 3.2s
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚡ PHASE 3: STATIC ANALYSIS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[████████████████████████████████████████] 156/156 files (100%)
+✓ Pattern matching completed in 2.1s
+  Found 12 potential vulnerabilities
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🌳 PHASE 4: SEMANTIC ANALYSIS (Tree-sitter)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Analyzing: src/file_operations.py
+  ✓ AST parsed (32ms)
+  🔍 Dataflow analysis: Tracking 8 tainted variables
+  ⚠️  Found potential path traversal vulnerability
+
+Analyzing: src/utils/shell.py
+  ✓ AST parsed (28ms)
+  🔍 Dataflow analysis: Tracking 3 tainted variables
+  🔴 Found command injection vulnerability
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔍 PHASE 5: SEMGREP SAST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✓ Semgrep analysis completed in 12.4s
+  Applied 287 rules across 111 files
+  Found 15 findings (7 high-confidence)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📊 SCAN RESULTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⏱️  Total Scan Time: 61.3 seconds
+📁 Files Scanned: 156 files
+🔍 Detection Engines: 5 active
+📊 Risk Score: 78/100 🔴 HIGH RISK
+
+SEVERITY BREAKDOWN:
+  🔴 CRITICAL:  3 vulnerabilities
+  🟠 HIGH:      8 vulnerabilities
+  🟡 MEDIUM:   12 vulnerabilities
+  🟢 LOW:       6 vulnerabilities
+
+Total: 29 vulnerabilities detected
+```
+
+**[📄 View full terminal output](docs/samples/terminal_output_comprehensive.txt)** (200+ lines with detailed vulnerability cards)
+
+</details>
+
+---
+
+### 🎨 HTML Report Preview
+
+v2.5.0's HTML reports provide interactive dashboards perfect for stakeholders and compliance audits:
+
+**Features:**
+- 📊 Risk Score Dashboard (0-100 with color coding)
+- 📈 Severity Breakdown Charts
+- 🔍 Expandable Vulnerability Cards
+- 📱 Responsive Design (works on mobile)
+- 💾 Self-Contained (no external dependencies, works offline)
+
+**Example command:**
+```bash
+mcp-sentinel scan ./server --output html --output-file audit.html
+```
+
+> **Note:** Screenshots coming soon. The HTML report includes interactive elements that are best experienced live. Try generating one yourself!
+
+---
+
+### 📋 JSON Output Structure
+
+For CI/CD integration and programmatic analysis:
+
+<details>
+<summary><b>🔧 Click to see sample JSON output</b> (Structured vulnerability data)</summary>
+
+```json
+{
+  "version": "2.5.0",
+  "scan_metadata": {
+    "timestamp": "2025-10-26T10:30:45Z",
+    "target": "https://github.com/example-org/mcp-filesystem-server",
+    "scan_type": "comprehensive",
+    "duration_ms": 61300,
+    "engines_used": [
+      "static_analysis",
+      "semantic_analysis",
+      "semgrep",
+      "ai_analysis",
+      "tool_description_analysis"
+    ]
+  },
+  "summary": {
+    "total_vulnerabilities": 29,
+    "risk_score": 78,
+    "risk_level": "high",
+    "by_severity": {
+      "critical": 3,
+      "high": 8,
+      "medium": 12,
+      "low": 6
+    }
+  },
+  "vulnerabilities": [
+    {
+      "id": "VULN-001",
+      "type": "secrets_leakage",
+      "severity": "critical",
+      "title": "Hardcoded API Key in Configuration",
+      "location": {
+        "file": "config/mcp_config.json",
+        "line": 15,
+        "column": 3
+      },
+      "detected_by": ["static_analysis", "ai_analysis"],
+      "confidence": 98,
+      "dataflow": {
+        "source": {...},
+        "sink": {...}
+      },
+      "remediation": {
+        "priority": "immediate",
+        "steps": ["Remove key...", "Use env vars..."]
+      }
+    }
+  ],
+  "engine_statistics": {
+    "semantic_analysis": {
+      "findings": 8,
+      "duration_ms": 4800,
+      "dataflow_paths": 16
+    }
+  }
+}
+```
+
+**[📄 View full JSON example](docs/samples/scan_results.json)** (Complete structure with 5+ vulnerabilities)
+
+</details>
+
+---
+
+### 🚀 Quick Comparison: Before vs After v2.5.0
+
+| Aspect | v2.0.0 | v2.5.0 (Current) |
+|--------|--------|------------------|
+| **Detection** | 2 engines | **5 engines** 🆕 |
+| **Coverage** | Baseline +60% | **+85%** 🆕 |
+| **Languages** | All (regex only) | **Python, JS, TS, Go (semantic)** 🆕 |
+| **Reports** | Terminal, JSON, SARIF | **+ HTML dashboards** 🆕 |
+| **Targets** | Local directories | **+ GitHub URLs** 🆕 |
+| **Scan Time** | 8.2s (1000 files) | **7.8s** (5% faster) ⚡ |
+
+---
+
 ## 📊 Implementation Status
 
 ### 🏆 Version Comparison
