@@ -510,17 +510,20 @@ For CI/CD integration and programmatic analysis:
 
 ### 🏆 Version Comparison
 
-| Capability | v1.0.0 | v2.0.0 | **v2.5.0 (Current)** |
-|------------|--------|--------|---------------------|
-| **Detection Engines** | 1 (Static) | 2 (Static + AI) | **5 (Static + AI + Semantic + Semgrep + Tool Analysis)** |
-| **Vulnerability Coverage** | Baseline | +60% | **+85%** |
-| **Languages** | All (regex) | All (regex) | **Python, JS, TS, Go (semantic)** |
-| **Report Formats** | Terminal, JSON, SARIF | Terminal, JSON, SARIF | **+ HTML Interactive Dashboards** |
-| **Scan Targets** | Local dirs | Local dirs | **+ GitHub URLs (direct)** |
-| **Performance** | 8.2s | 8.2s | **7.8s (5% faster)** |
-| **Best For** | Quick checks | Deep analysis | **Enterprise security audits** |
+| Capability | v1.0.0 | v2.0.0 | v2.5.0 | **v2.6.0 (Current)** |
+|------------|--------|--------|--------|---------------------|
+| **Detection Engines** | 1 (Static) | 2 (Static + AI) | 5 | **5 + Threat Intel** |
+| **Vulnerability Patterns** | 40 | 40 | 60+ | **78+** |
+| **Threat Intelligence** | None | None | None | **VulnerableMCP + MITRE ATT&CK + NVD** |
+| **Supply Chain Security** | No | No | No | **11 patterns** |
+| **Languages** | All (regex) | All (regex) | Python, JS, TS, Go | **Python, JS, TS, Go (enhanced XSS)** |
+| **Report Formats** | Terminal, JSON, SARIF | Terminal, JSON, SARIF | + HTML | **+ HTML with threat intel** |
+| **Scan Targets** | Local dirs | Local dirs | + GitHub URLs | **+ GitHub URLs** |
+| **Performance** | 8.2s | 8.2s | 7.8s | **7.8s (stable)** |
+| **Test Coverage** | Basic | Enhanced | 78 tests | **96 tests (18 new)** |
+| **Best For** | Quick checks | Deep analysis | Enterprise audits | **Threat-informed security** |
 
-**Migration:** All v1.x and v2.0 commands work in v2.5.0 (100% backward compatible)
+**Migration:** All v1.x, v2.0, and v2.5 commands work in v2.6.0 (100% backward compatible)
 
 ### ✅ Phase 2.5 Complete (v2.5.0) - Current Release
 
