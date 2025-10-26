@@ -70,7 +70,7 @@ impl CacheEntry {
     fn is_expired(&self) -> bool {
         let now = SystemTime::now()
             .duration_since(UNIX_EPOCH)
-            .unwrap()
+            .unwrap_or(Duration::from_secs(0))  // Graceful fallback if system time is invalid
             .as_secs();
 
         now > self.cached_at + self.ttl_seconds
