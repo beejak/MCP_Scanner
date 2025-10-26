@@ -31,6 +31,7 @@ pub mod output;
 pub mod providers;
 pub mod storage;
 pub mod suppression;
+pub mod threat_intel;
 pub mod utils;
 
 // Re-export common types
