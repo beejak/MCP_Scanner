@@ -7,25 +7,25 @@
 [![Version](https://img.shields.io/badge/version-2.6.0-green.svg)](https://github.com/beejak/MCP_Scanner/releases/tag/v2.6.0)
 [![Release](https://img.shields.io/github/v/release/beejak/MCP_Scanner)](https://github.com/beejak/MCP_Scanner/releases/latest)
 
-MCP Sentinel is a next-generation security scanner for Model Context Protocol (MCP) servers that combines **semantic AST analysis**, **Semgrep integration**, **AI-powered detection**, **HTML reporting**, and **GitHub URL scanning** in a single, blazing-fast Rust binary.
+MCP Sentinel is a next-generation security scanner for Model Context Protocol (MCP) servers that combines **threat intelligence integration**, **semantic AST analysis**, **Semgrep integration**, **AI-powered detection**, **supply chain security**, and **enterprise reporting** in a single, blazing-fast Rust binary.
 
 ---
 
-## 🎉 What's New in v2.5.0 (Latest Release)
+## 🎉 What's New in v2.6.0 (Latest Release)
 
-**v2.5.0** represents a major leap forward in enterprise security capabilities:
+**v2.6.0** brings comprehensive threat intelligence and supply chain security to enterprise security workflows:
 
 | Feature | What It Does | Why It Matters |
 |---------|--------------|----------------|
-| 🌳 **Tree-sitter AST** | Semantic code analysis for Python, JS, TS, Go | Context-aware detection beyond regex patterns |
-| 🔍 **Semgrep Integration** | 1000+ community SAST rules | 40% more vulnerability coverage |
-| 📊 **HTML Reports** | Interactive dashboards with risk scoring | Executive-ready compliance documentation |
-| 🐙 **GitHub URL Scanning** | Direct repository audits without cloning | Audit third-party dependencies instantly |
-| 🛡️ **Tool Analysis** | MCP-specific prompt injection detection | Protect against AI manipulation attacks |
+| 🧠 **Threat Intelligence** | VulnerableMCP API, MITRE ATT&CK, NVD integration | Prioritize vulnerabilities with real-world exploit data |
+| 🔒 **Supply Chain Security** | 11 patterns for malicious packages | Detect package confusion attacks before installation |
+| 🚀 **Enhanced XSS Detection** | 5 DOM XSS patterns (innerHTML, eval, etc.) | Comprehensive client-side injection coverage |
+| 🛡️ **Node.js Security** | Weak RNG, path traversal detection | Context-aware Node.js vulnerability detection |
+| 🧪 **Production Quality** | 18 integration tests, 92% coverage | Enterprise-ready with zero breaking changes |
 
-**Performance:** Same blazing speed (7.8s for 1000 files), now with 85% more coverage when all engines are enabled.
+**Performance:** Stable 7.8s scan time, zero new dependencies, 38% faster than v1.0.0 despite 676% code growth.
 
-**[📥 Download v2.5.0](https://github.com/beejak/MCP_Scanner/releases/tag/v2.5.0)** | **[📖 Release Notes](https://github.com/beejak/MCP_Scanner/releases/tag/v2.5.0)** | **[⚡ Command Cheat Sheet](docs/CHEATSHEET.md)** | **[🚀 Roadmap](#-implementation-status)**
+**[📥 Download v2.6.0](https://github.com/beejak/MCP_Scanner/releases/tag/v2.6.0)** | **[📖 Release Notes](RELEASE_NOTES_v2.6.0.md)** | **[⚡ Installation Guide](INSTALLATION.md)** | **[🚀 Roadmap](#-implementation-status)**
 
 ---
 
