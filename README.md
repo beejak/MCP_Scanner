@@ -1,11 +1,13 @@
 # MCP Sentinel
 
-🛡️ The Ultimate Security Scanner for MCP Servers
+🛡️ Enterprise-Grade Security Scanner for MCP Servers
 
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Rust](https://img.shields.io/badge/rust-1.70+-orange.svg)](https://www.rust-lang.org)
+[![Version](https://img.shields.io/badge/version-2.5.0-green.svg)](https://github.com/beejak/MCP_Scanner/releases/tag/v2.5.0)
+[![Release](https://img.shields.io/github/v/release/beejak/MCP_Scanner)](https://github.com/beejak/MCP_Scanner/releases/latest)
 
-MCP Sentinel is a next-generation security scanner for Model Context Protocol (MCP) servers that combines static analysis, runtime monitoring, and AI-powered detection in a single, high-performance Rust binary.
+MCP Sentinel is a next-generation security scanner for Model Context Protocol (MCP) servers that combines **semantic AST analysis**, **Semgrep integration**, **AI-powered detection**, **HTML reporting**, and **GitHub URL scanning** in a single, blazing-fast Rust binary.
 
 ## ⚡ Features
 
