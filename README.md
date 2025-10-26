@@ -622,6 +622,8 @@ fi
 
 ### GitHub Actions Integration
 
+**🐳 Using Docker (Recommended - No setup required):**
+
 ```yaml
 name: MCP Security Scan
 on: [push, pull_request]
@@ -631,6 +633,37 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+
+      - name: Run MCP Sentinel (Docker)
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}:/workspace \
+            ghcr.io/beejak/mcp-sentinel:2.5.0 \
+            scan /workspace --enable-semgrep --fail-on high --output sarif --output-file /workspace/results.sarif
+
+      - name: Upload SARIF to GitHub Code Scanning
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: results.sarif
+```
+
+**Binary Installation (Faster but requires setup):**
+
+```yaml
+name: MCP Security Scan
+on: [push, pull_request]
+
+jobs:
+  security-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install MCP Sentinel
+        run: |
+          wget https://github.com/beejak/MCP_Scanner/releases/download/v2.5.0/mcp-sentinel-linux-x86_64
+          chmod +x mcp-sentinel-linux-x86_64
+          sudo mv mcp-sentinel-linux-x86_64 /usr/local/bin/mcp-sentinel
 
       - name: Run MCP Sentinel
         run: |
