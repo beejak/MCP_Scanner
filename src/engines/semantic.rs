@@ -1033,6 +1033,181 @@ impl SemanticEngine {
         Ok(vulnerabilities)
     }
 
+    /// Detect weak random number generation for security purposes (Math.random())
+    ///
+    /// ## Why This Matters
+    ///
+    /// Math.random() is NOT cryptographically secure and should never be used for:
+    /// - Session tokens
+    /// - Passwords
+    /// - Encryption keys
+    /// - Authentication tokens
+    /// - CSRF tokens
+    ///
+    /// Use crypto.randomBytes() or crypto.getRandomValues() instead.
+    fn detect_js_weak_rng(
+        &self,
+        tree: &Tree,
+        code: &str,
+        file_path: &str,
+    ) -> Result<Vec<Vulnerability>> {
+        let mut vulnerabilities = Vec::new();
+
+        // Query for Math.random() calls
+        let query_str = r#"
+            (call_expression
+              function: (member_expression
+                object: (identifier) @obj (#eq? @obj "Math")
+                property: (property_identifier) @prop (#eq? @prop "random")))
+        "#;
+
+        let query = Query::new(unsafe { tree_sitter_javascript() }, query_str)
+            .context("Failed to create weak RNG query")?;
+
+        let mut cursor = QueryCursor::new();
+        let matches = cursor.matches(&query, tree.root_node(), code.as_bytes());
+
+        for match_ in matches {
+            for capture in match_.captures {
+                let node = capture.node;
+                let start_point = node.start_position();
+
+                // Get surrounding context to check if this is used for security
+                let parent = node.parent();
+                let context = parent
+                    .and_then(|p| Some(p.utf8_text(code.as_bytes()).unwrap_or("")))
+                    .unwrap_or("");
+
+                // Check if used in security-sensitive context
+                let is_security_context = context.to_lowercase().contains("token")
+                    || context.to_lowercase().contains("password")
+                    || context.to_lowercase().contains("secret")
+                    || context.to_lowercase().contains("key")
+                    || context.to_lowercase().contains("auth")
+                    || context.to_lowercase().contains("session")
+                    || context.to_lowercase().contains("csrf");
+
+                let severity = if is_security_context {
+                    Severity::High
+                } else {
+                    Severity::Medium
+                };
+
+                let vuln = Vulnerability::new(
+                    format!("SEMANTIC-WEAK-RNG-{}", start_point.row + 1),
+                    VulnerabilityType::InsecureConfiguration,
+                    severity,
+                    "Weak Random Number Generation",
+                    "Detected use of Math.random() which is not cryptographically secure. For security-sensitive operations, use crypto.randomBytes() or crypto.getRandomValues()."
+                )
+                .with_location(Location {
+                    file: file_path.to_string(),
+                    line: Some(start_point.row + 1),
+                    column: Some(start_point.column + 1),
+                })
+                .with_code_snippet(node.utf8_text(code.as_bytes()).unwrap_or(""))
+                .with_impact("Predictable random values can be exploited to bypass authentication, guess session tokens, or compromise encryption.")
+                .with_remediation("Use crypto.randomBytes() in Node.js or crypto.getRandomValues() in browsers for cryptographically secure random numbers.")
+                .with_confidence(if is_security_context { 0.85 } else { 0.60 });
+
+                vulnerabilities.push(vuln);
+            }
+        }
+
+        Ok(vulnerabilities)
+    }
+
+    /// Detect path traversal vulnerabilities in fs operations
+    ///
+    /// ## Detection Strategy
+    ///
+    /// Looks for:
+    /// - fs.readFileSync(userPath)
+    /// - fs.readFile(userPath)
+    /// - fs.writeFileSync(userPath)
+    /// - Other fs operations with variable paths
+    ///
+    /// If the path comes from user input without sanitization, allows path traversal (../)
+    fn detect_js_fs_path_traversal(
+        &self,
+        tree: &Tree,
+        code: &str,
+        file_path: &str,
+    ) -> Result<Vec<Vulnerability>> {
+        let mut vulnerabilities = Vec::new();
+
+        // Query for fs.readFileSync, fs.readFile, etc.
+        let query_str = r#"
+            (call_expression
+              function: (member_expression
+                object: (identifier) @obj (#eq? @obj "fs")
+                property: (property_identifier) @prop)
+              arguments: (arguments) @args)
+        "#;
+
+        let query = Query::new(unsafe { tree_sitter_javascript() }, query_str)
+            .context("Failed to create fs path traversal query")?;
+
+        let mut cursor = QueryCursor::new();
+        let matches = cursor.matches(&query, tree.root_node(), code.as_bytes());
+
+        // Dangerous fs methods
+        let dangerous_methods = vec![
+            "readFile", "readFileSync",
+            "writeFile", "writeFileSync",
+            "appendFile", "appendFileSync",
+            "readdir", "readdirSync",
+            "open", "openSync",
+        ];
+
+        for match_ in matches {
+            if let Some(prop_capture) = match_.captures.get(1) {
+                let method_name = prop_capture.node.utf8_text(code.as_bytes()).unwrap_or("");
+
+                if dangerous_methods.contains(&method_name) {
+                    // Check if first argument is a variable (not a string literal)
+                    if let Some(args_capture) = match_.captures.get(2) {
+                        let args_text = args_capture.node.utf8_text(code.as_bytes()).unwrap_or("");
+
+                        // If arguments contain variables or concatenation, flag it
+                        let is_dynamic_path = !args_text.trim_start().starts_with('"')
+                            && !args_text.trim_start().starts_with('\'')
+                            && !args_text.trim_start().starts_with('`');
+
+                        if is_dynamic_path {
+                            let node = prop_capture.node;
+                            let start_point = node.start_position();
+
+                            let vuln = Vulnerability::new(
+                                format!("SEMANTIC-FS-PATH-{}", start_point.row + 1),
+                                VulnerabilityType::PathTraversal,
+                                Severity::High,
+                                format!("Path Traversal in fs.{}()", method_name),
+                                format!(
+                                    "Detected fs.{}() with dynamic file path. If the path comes from user input without proper validation, it allows path traversal attacks using '../' sequences.",
+                                    method_name
+                                ),
+                            )
+                            .with_location(Location {
+                                file: file_path.to_string(),
+                                line: Some(start_point.row + 1),
+                                column: Some(start_point.column + 1),
+                            })
+                            .with_code_snippet(args_capture.node.utf8_text(code.as_bytes()).unwrap_or(""))
+                            .with_impact("An attacker can read or write files outside the intended directory by using '../' in the file path, potentially accessing sensitive files like /etc/passwd or configuration files.")
+                            .with_remediation("Validate and sanitize file paths: 1) Use path.normalize() and path.resolve(), 2) Check that resolved path starts with the intended base directory, 3) Reject paths containing '../', 4) Use allowlists for file access.")
+                            .with_confidence(0.75);
+
+                            vulnerabilities.push(vuln);
+                        }
+                    }
+                }
+            }
+        }
+
+        Ok(vulnerabilities)
+    }
+
     //
     // Go Detection Methods
     //
