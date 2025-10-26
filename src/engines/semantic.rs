@@ -202,6 +202,9 @@ impl SemanticEngine {
         code: &str,
         file_path: &str,
     ) -> Result<Vec<Vulnerability>> {
+        debug!("Starting TypeScript semantic analysis on {}", file_path);
+        let start = std::time::Instant::now();
+
         let tree = self
             .typescript_parser
             .parse(code, None)
@@ -212,11 +215,21 @@ impl SemanticEngine {
         vulnerabilities.extend(self.detect_js_command_injection(&tree, code, file_path)?);
         vulnerabilities.extend(self.detect_js_xss(&tree, code, file_path)?);
 
+        info!(
+            "TypeScript analysis completed in {:?}, found {} vulnerabilities in {}",
+            start.elapsed(),
+            vulnerabilities.len(),
+            file_path
+        );
+
         Ok(vulnerabilities)
     }
 
     /// Analyze Go code for vulnerabilities.
     pub fn analyze_go(&mut self, code: &str, file_path: &str) -> Result<Vec<Vulnerability>> {
+        debug!("Starting Go semantic analysis on {}", file_path);
+        let start = std::time::Instant::now();
+
         let tree = self
             .go_parser
             .parse(code, None)
@@ -226,6 +239,13 @@ impl SemanticEngine {
 
         vulnerabilities.extend(self.detect_go_command_injection(&tree, code, file_path)?);
         vulnerabilities.extend(self.detect_go_sql_injection(&tree, code, file_path)?);
+
+        info!(
+            "Go analysis completed in {:?}, found {} vulnerabilities in {}",
+            start.elapsed(),
+            vulnerabilities.len(),
+            file_path
+        );
 
         Ok(vulnerabilities)
     }
