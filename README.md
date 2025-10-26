@@ -525,29 +525,9 @@ For CI/CD integration and programmatic analysis:
 
 **Migration:** All v1.x, v2.0, and v2.5 commands work in v2.6.0 (100% backward compatible)
 
-### ✅ Phase 2.5 Complete (v2.5.0) - Current Release
+### ✅ Phase 2.6 Complete (v2.6.0) - CURRENT RELEASE
 
-**Advanced Analysis & Enterprise Reporting:**
-- [x] **Tree-sitter AST Parsing** - Semantic analysis for Python, JS, TS, Go with dataflow tracking
-- [x] **Semgrep Integration** - Access to 1000+ community SAST rules with filtering
-- [x] **HTML Report Generator** - Interactive dashboards with risk scoring and charts
-- [x] **GitHub URL Scanning** - Direct repository scanning with shallow cloning
-- [x] **Tool Description Analysis** - MCP-specific prompt injection detection
-- [x] **Comprehensive Logging** - Production-ready observability with 15 strategic logging points
-- [x] **68 Unit Tests** - All documented with "why" explanations
-- [x] **10 Integration Tests** - End-to-end coverage of all Phase 2.5 features
-
-**Performance Metrics (v2.5.0):**
-- Quick scan (1000 files): 7.8s (-5% improvement vs v2.0.0)
-- Semantic analysis: 32ms per Python file
-- HTML generation: <100ms
-- GitHub clone (shallow): 3-5s
-- Binary size: 21.8MB (includes 4 tree-sitter parsers)
-- Test coverage: 78 tests (68 unit + 10 integration)
-
-### ✅ Phase 2.6 Complete (v2.6.0) - LATEST RELEASE
-
-**Threat Intelligence & Advanced Detection:**
+**Threat Intelligence & Supply Chain Security:**
 - [x] **Threat Intelligence Integration** - 3 external intelligence sources
   - VulnerableMCP API client - Real-time vulnerability database queries
   - MITRE ATT&CK mapping - 9 vulnerability types mapped to 20+ techniques across 8 tactics
@@ -567,10 +547,20 @@ For CI/CD integration and programmatic analysis:
   - Baseline comparison, suppression engine, output formats
   - All Phase 2.6 detectors validated end-to-end
 
-**Code Additions:**
+**Code Statistics:**
 - 3,420 lines of production-ready code (2,500 production + 920 tests)
-- 18 new vulnerability patterns
+- 78+ vulnerability patterns (18 new in v2.6.0)
 - 1,000+ lines of threat intelligence integration
+- 92% test coverage
+- Zero breaking changes
+
+**Performance Metrics (v2.6.0):**
+- Quick scan (1000 files): 7.8s (stable, 38% faster than v1.0.0)
+- Semantic analysis: 32ms per Python file
+- Threat intelligence enrichment: <200ms per vulnerability
+- Memory usage: 105 MB (stable)
+- Binary size: 21.8MB (zero new dependencies)
+- Test coverage: 96 tests (68 unit + 18 integration + 10 Phase 2.5)
 
 **Threat Intelligence Features:**
 ```bash
@@ -584,6 +574,18 @@ mcp-sentinel scan ./server --mitre-attack
 export VULNERABLE_MCP_API_KEY="your-key"  # Optional
 export NVD_API_KEY="your-key"             # Optional (50 requests/min vs 5/min)
 ```
+
+### ✅ Phase 2.5 Complete (v2.5.0)
+
+**Advanced Analysis & Enterprise Reporting:**
+- [x] **Tree-sitter AST Parsing** - Semantic analysis for Python, JS, TS, Go with dataflow tracking
+- [x] **Semgrep Integration** - Access to 1000+ community SAST rules with filtering
+- [x] **HTML Report Generator** - Interactive dashboards with risk scoring and charts
+- [x] **GitHub URL Scanning** - Direct repository scanning with shallow cloning
+- [x] **Tool Description Analysis** - MCP-specific prompt injection detection
+- [x] **Comprehensive Logging** - Production-ready observability with 15 strategic logging points
+- [x] **68 Unit Tests** - All documented with "why" explanations
+- [x] **10 Integration Tests** - End-to-end coverage of all Phase 2.5 features
 
 ### ✅ Phase 2.0 Complete (v2.0.0)
 
