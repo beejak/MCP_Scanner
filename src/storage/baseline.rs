@@ -205,6 +205,7 @@ impl BaselineManager {
     /// * `project_id` - Unique project identifier
     /// * `vulnerabilities` - List of vulnerabilities
     /// * `file_hashes` - Map of file paths to content hashes
+    /// * `config_fingerprint` - Optional fingerprint of scan configuration (for comparison validity)
     ///
     /// # Returns
     ///
@@ -219,8 +220,30 @@ impl BaselineManager {
         project_id: &str,
         vulnerabilities: &[Vulnerability],
         file_hashes: HashMap<String, String>,
+        config_fingerprint: Option<String>,
     ) -> Result<PathBuf> {
         info!("Saving baseline for project: {}", project_id);
+
+        // Generate config fingerprint if not provided
+        let fingerprint = config_fingerprint.unwrap_or_else(|| {
+            // Default fingerprint based on vulnerability count and types
+            // This ensures baselines with different detection capabilities are distinguished
+            let mut fingerprint_input = String::new();
+            fingerprint_input.push_str(&format!("vuln_count:{}", vulnerabilities.len()));
+
+            // Include unique vulnerability types in fingerprint
+            let mut types: Vec<String> = vulnerabilities
+                .iter()
+                .map(|v| v.vuln_type.name().to_string())
+                .collect();
+            types.sort();
+            types.dedup();
+            for vtype in types {
+                fingerprint_input.push_str(&format!(";type:{}", vtype));
+            }
+
+            format!("{:x}", Sha256::digest(fingerprint_input.as_bytes()))
+        });
 
         // Convert vulnerabilities to baseline format
         let baseline_vulns: Vec<BaselineVulnerability> = vulnerabilities
@@ -239,7 +262,7 @@ impl BaselineManager {
             timestamp: chrono::Utc::now(),
             vulnerabilities: baseline_vulns,
             file_hashes,
-            config_fingerprint: String::new(), // TODO: Add config fingerprint
+            config_fingerprint: fingerprint,
         };
 
         // Serialize to JSON
