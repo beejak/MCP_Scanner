@@ -70,6 +70,7 @@ use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use tokio::process::Command as AsyncCommand;
+use tracing::{debug, info, warn};
 
 /// Semgrep integration engine.
 ///
