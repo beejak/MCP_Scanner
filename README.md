@@ -170,56 +170,85 @@ cargo build --release
 
 ### 🎯 v2.6.0 Feature Showcase
 
-**🌳 Semantic Analysis** (Automatic for Python/JS/TS/Go):
+**🧠 Threat Intelligence Enrichment** (NEW - Real-world threat context!):
 ```bash
-# Tree-sitter AST analysis runs automatically - no flags needed!
-mcp-sentinel scan ./my-python-mcp-server
+# Enrich vulnerabilities with CVE data, MITRE ATT&CK, and exploit intel
+export NVD_API_KEY="your-nvd-api-key"  # Optional but recommended
+mcp-sentinel scan ./my-node-server --threat-intel
+
+# Results include:
+# ✓ MITRE ATT&CK technique mappings (T1059.004, etc.)
+# ✓ Related CVEs with CVSS scores
+# ✓ Known exploits and threat actors
+# ✓ Real-world incident data
 ```
 
-**🐙 GitHub URL Scanning** (NEW - No manual cloning!):
+**🔒 Supply Chain Security Scanning** (NEW - Detect malicious packages!):
+```bash
+# Scan package.json for supply chain attacks
+mcp-sentinel scan ./node-project
+
+# Automatically detects:
+# ✓ Malicious install scripts (preinstall, postinstall)
+# ✓ HTTP dependencies (insecure)
+# ✓ Wildcard versions (risky)
+# ✓ Package confusion attacks
+```
+
+**🚀 Enhanced DOM XSS Detection** (NEW - 5 patterns!):
+```bash
+# Comprehensive XSS detection for frontend code
+mcp-sentinel scan ./frontend
+
+# Detects: innerHTML, outerHTML, document.write, eval, Function constructor
+# With dataflow tracking to minimize false positives
+```
+
+**🛡️ Node.js Security Audit** (NEW - Context-aware detection!):
+```bash
+# Detect Node.js-specific vulnerabilities
+mcp-sentinel scan ./backend
+
+# Finds:
+# ✓ Weak RNG in security contexts (Math.random() for tokens)
+# ✓ Path traversal in fs operations
+# ✓ Context-aware vulnerability detection
+```
+
+**🐙 GitHub URL Scanning** (No manual cloning!):
 ```bash
 # Audit third-party MCP server before installing
-mcp-sentinel scan https://github.com/vendor/mcp-server
+mcp-sentinel scan https://github.com/vendor/mcp-server --threat-intel
 
 # Scan specific branch or release tag
 mcp-sentinel scan https://github.com/owner/repo/tree/v1.2.3
 
-# Perfect for supply chain security audits
-mcp-sentinel scan https://github.com/modelcontextprotocol/servers --fail-on high
+# Perfect for supply chain security audits with threat intel
+mcp-sentinel scan https://github.com/modelcontextprotocol/servers \
+  --threat-intel \
+  --fail-on critical,high
 ```
 
-**🔍 Semgrep Integration** (NEW - 1000+ community rules):
+**🚀 Ultimate Security Audit** (All v2.6.0 features combined):
 ```bash
-# Requires: pip install semgrep
-mcp-sentinel scan ./my-mcp-server --enable-semgrep
-
-# +40% vulnerability coverage in 15 seconds
-```
-
-**📊 HTML Reports** (NEW - Executive-ready dashboards):
-```bash
-# Generate interactive HTML report with risk scoring
-mcp-sentinel scan ./my-mcp-server --output html --output-file security-audit.html
-
-# Perfect for compliance documentation and stakeholder presentations
-```
-
-**🚀 Multi-Engine Comprehensive Scan** (All v2.5.0 features):
-```bash
-# The ultimate security audit - combines all engines
+# The most comprehensive security scan available
 mcp-sentinel scan ./my-mcp-server \
   --mode deep \
+  --threat-intel \
   --enable-semgrep \
   --llm-provider ollama \
   --output html \
-  --output-file comprehensive-audit.html
+  --output-file security-audit-2.6.html
 
 # What this does:
+# ✓ Pattern matching (40+ patterns)
 # ✓ Tree-sitter semantic analysis (Python, JS, TS, Go)
 # ✓ Semgrep SAST (1000+ rules)
 # ✓ AI-powered analysis (Ollama)
-# ✓ Interactive HTML dashboard
-# = 85% more vulnerability coverage
+# ✓ Threat intelligence (MITRE ATT&CK, NVD, VulnerableMCP)
+# ✓ Supply chain security (11 patterns)
+# ✓ Interactive HTML dashboard with threat intel
+# = Maximum vulnerability coverage with real-world context
 ```
 
 ### Classic Workflows
