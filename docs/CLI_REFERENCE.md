@@ -326,6 +326,51 @@ mcp-sentinel scan ./server --mode deep --llm-provider openai
 
 ---
 
+#### `--enable-semgrep`
+
+Enable Semgrep integration for SAST analysis (Phase 2.5).
+
+**Why This Flag**: Leverage 1000+ community Semgrep rules for broader vulnerability coverage beyond built-in pattern matching.
+
+**Requirements**:
+- Semgrep CLI must be installed (`pip install semgrep`)
+- Gracefully degrades if not available (warning logged, scan continues)
+
+**How It Works**:
+1. Runs Semgrep CLI as external process
+2. Applies security-focused rule filtering
+3. Converts Semgrep findings to MCP Sentinel format
+4. Merges with other detection results
+
+**Examples**:
+```bash
+# Enable Semgrep integration
+mcp-sentinel scan ./server --enable-semgrep
+
+# Combine with deep mode and AI analysis
+mcp-sentinel scan ./server --mode deep --enable-semgrep --llm-provider ollama
+
+# CI/CD with multiple analysis engines
+mcp-sentinel scan . --enable-semgrep --fail-on high --output sarif
+
+# GitHub URL scanning with Semgrep
+mcp-sentinel scan https://github.com/owner/mcp-server --enable-semgrep
+```
+
+**Performance**: Adds 5-15 seconds to scan time depending on codebase size (external process overhead).
+
+**Rule Coverage**:
+- Security patterns (injection, XSS, crypto issues)
+- Best practices violations
+- Language-specific vulnerabilities
+- Automatically filtered to security-relevant rules only
+
+**Environment Variables**:
+- `SEMGREP_PATH`: Custom path to semgrep binary (default: searches PATH)
+- `MCP_SENTINEL_SEMGREP_RULES`: Custom Semgrep rule configuration
+
+---
+
 ### Output Options
 
 #### `--output <FORMAT>` / `-o <FORMAT>`
