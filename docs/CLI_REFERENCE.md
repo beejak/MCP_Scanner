@@ -400,10 +400,10 @@ mcp-sentinel scan ./server --output json > report.json
 # SARIF for GitHub code scanning
 mcp-sentinel scan ./server --output sarif --output-file results.sarif
 
-# HTML for stakeholder reports (Phase 3)
+# HTML for stakeholder reports (Phase 2.5)
 mcp-sentinel scan ./server --output html --output-file report.html
 
-# PDF for compliance audits (Phase 3)
+# PDF for compliance audits (Phase 3 - planned)
 mcp-sentinel scan ./server --output pdf --output-file audit-report.pdf
 ```
 
