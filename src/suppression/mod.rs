@@ -196,7 +196,7 @@ impl SuppressionManager {
                     if !suppression.is_expired() && self.matcher.matches(suppression, vuln)? {
                         suppressed.push(VulnerabilityWithReason {
                             vulnerability: vuln.clone(),
-                            suppression_reason: suppression.reason.clone(),
+                            suppression_reason: Some(suppression.reason.clone()),
                             suppression_id: suppression.id.clone(),
                             suppression_author: suppression.author.clone(),
                         });
