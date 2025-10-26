@@ -120,9 +120,11 @@ impl SuppressionManager {
                 suppressions: vec![],
             },
             matcher: SuppressionMatcher::new(),
-            auditor: SuppressionAuditor::new().unwrap_or_else(|_| {
-                // Fallback if auditor creation fails
-                SuppressionAuditor::new().unwrap()
+            auditor: SuppressionAuditor::new().unwrap_or_else(|e| {
+                // Graceful degradation: use disabled auditor if initialization fails
+                // (e.g., no home directory, no write permissions)
+                eprintln!("Warning: Failed to initialize suppression auditor: {}. Audit logging disabled.", e);
+                SuppressionAuditor::disabled()
             }),
         }
     }
