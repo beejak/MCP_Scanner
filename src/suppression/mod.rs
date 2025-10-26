@@ -219,6 +219,32 @@ impl SuppressionManager {
     }
 }
 
+/// Results of filtering with suppression information
+#[derive(Debug, Clone)]
+pub struct FilteredResults {
+    /// Vulnerabilities that passed suppression filters
+    pub active_vulnerabilities: Vec<Vulnerability>,
+
+    /// Vulnerabilities that were suppressed
+    pub suppressed_vulnerabilities: Vec<VulnerabilityWithReason>,
+}
+
+/// Vulnerability with suppression reason attached
+#[derive(Debug, Clone)]
+pub struct VulnerabilityWithReason {
+    /// The vulnerability that was suppressed
+    pub vulnerability: Vulnerability,
+
+    /// Reason for suppression
+    pub suppression_reason: String,
+
+    /// ID of suppression rule that matched
+    pub suppression_id: String,
+
+    /// Author of suppression
+    pub suppression_author: Option<String>,
+}
+
 /// Suppression statistics
 #[derive(Debug, Clone)]
 pub struct SuppressionStats {
