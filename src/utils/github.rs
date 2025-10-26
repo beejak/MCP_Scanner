@@ -67,6 +67,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 use tempfile::TempDir;
 use url::Url;
+use tracing::{debug, info, warn};
 
 /// GitHub repository scanner.
 ///
@@ -130,12 +131,18 @@ impl GitHubScanner {
     /// Temporary directory is automatically cleaned up when function returns,
     /// even if scan fails (RAII pattern via TempDir).
     pub async fn scan_url(&self, url: &str) -> Result<PathBuf> {
+        info!("Scanning GitHub repository: {}", url);
+
         // Parse GitHub URL
+        debug!("Parsing GitHub URL");
         let repo = Self::parse_github_url(url)?;
+        info!("Parsed repository: {}/{} (ref: {:?})", repo.owner, repo.repo, repo.git_ref);
 
         // Create temporary directory
+        debug!("Creating temporary directory for clone");
         let temp_dir = TempDir::new()
             .context("Failed to create temporary directory")?;
+        debug!("Temporary directory created at: {}", temp_dir.path().display());
 
         // Clone repository
         self.clone_repository(&repo, temp_dir.path()).await?;
@@ -206,6 +213,12 @@ impl GitHubScanner {
     /// - --branch: Specific branch/tag to clone
     /// - --quiet: Suppress progress output
     async fn clone_repository(&self, repo: &GitHubRepo, target_dir: &Path) -> Result<()> {
+        info!("Cloning repository: {} (shallow clone --depth=1)", repo.clone_url);
+        if let Some(ref git_ref) = repo.git_ref {
+            debug!("Using specific git reference: {}", git_ref);
+        }
+        let start = std::time::Instant::now();
+
         let mut cmd = Command::new("git");
         cmd.arg("clone")
             .arg("--depth=1")        // Shallow clone
@@ -228,6 +241,8 @@ impl GitHubScanner {
             let stderr = String::from_utf8_lossy(&output.stderr);
             anyhow::bail!("Git clone failed: {}", stderr);
         }
+
+        info!("Repository cloned successfully in {:?} to: {}", start.elapsed(), target_dir.display());
 
         Ok(())
     }
