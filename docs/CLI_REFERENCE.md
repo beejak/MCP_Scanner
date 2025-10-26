@@ -137,26 +137,47 @@ mcp-sentinel scan <TARGET> [OPTIONS]
 
 #### `<TARGET>`
 
-Path to MCP server directory to scan.
+Path to MCP server directory **or GitHub URL** to scan (Phase 2.5+).
 
 **Why Required**: No sane default - user must explicitly specify what to scan.
 
+**Supported Formats**:
+1. **Local Directory**: `/path/to/mcp-server`
+2. **GitHub URL**: `https://github.com/owner/repo` (Phase 2.5+)
+   - With branch: `https://github.com/owner/repo/tree/branch-name`
+   - With tag: `https://github.com/owner/repo/tree/v1.0.0`
+   - With commit: `https://github.com/owner/repo/commit/abc123`
+
 **Examples**:
 ```bash
-# Scan current directory
+# Scan local directory
 mcp-sentinel scan .
-
-# Scan specific project
 mcp-sentinel scan ~/projects/my-mcp-server
-
-# Scan relative path
 mcp-sentinel scan ../backend/mcp-server
+
+# Scan GitHub repository (Phase 2.5+)
+mcp-sentinel scan https://github.com/owner/mcp-server
+
+# Scan specific branch (Phase 2.5+)
+mcp-sentinel scan https://github.com/owner/mcp-server/tree/develop
+
+# Scan specific commit (Phase 2.5+)
+mcp-sentinel scan https://github.com/owner/mcp-server/commit/abc123
+
+# Scan specific tag (Phase 2.5+)
+mcp-sentinel scan https://github.com/owner/mcp-server/tree/v2.0.0
 ```
 
+**GitHub URL Scanning** (Phase 2.5):
+- **How It Works**: Shallow clone (`--depth=1`) to temporary directory, scan, cleanup
+- **Performance**: 3-5 seconds for clone + scan time
+- **Requirements**: Git CLI must be installed
+- **Cleanup**: Automatic (even on failure)
+- **Privacy**: Clone happens locally, no data sent to MCP Sentinel servers
+
 **Validation**:
-- Must exist (exit code 2 if not found)
-- Must be a directory (exit code 2 if file)
-- Must be readable (exit code 2 if permission denied)
+- Local path: Must exist, be a directory, be readable (exit code 2 if not)
+- GitHub URL: Must be valid GitHub URL, git must be available (exit code 2 if not)
 
 ---
 
