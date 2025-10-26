@@ -256,11 +256,19 @@ impl GitHubScanner {
     /// - Provide installation instructions
     /// - Don't fail silently
     pub fn is_git_available() -> bool {
-        Command::new("git")
+        let available = Command::new("git")
             .arg("--version")
             .output()
             .map(|output| output.status.success())
-            .unwrap_or(false)
+            .unwrap_or(false);
+
+        if available {
+            debug!("Git is available on system");
+        } else {
+            warn!("Git not available - GitHub URL scanning will not work");
+        }
+
+        available
     }
 
     /// Get git version string.
