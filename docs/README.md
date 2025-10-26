@@ -537,7 +537,8 @@ mcp-sentinel audit . \
 | NETWORK_DIAGRAMS.md    | ~800  | Network flows and communication            |
 | TEST_STRATEGY.md       | ~900  | Testing approach and documentation         |
 | QA_CHECKLIST.md        | ~700  | Pre-release validation (62 test cases)     |
-| **Total**              | **~3900** | **Comprehensive documentation package**|
+| RELEASE_PROCESS.md     | ~1000 | Release workflow and performance tracking  |
+| **Total**              | **~4900** | **Comprehensive documentation package**|
 
 ---
 
