@@ -625,8 +625,34 @@ mcp-sentinel scan . --mode quick  # Instead of deep
 ## 🔗 Integration Examples
 
 ### GitHub Actions
+
+**🐳 Using Docker (Recommended):**
 ```yaml
 # .github/workflows/security.yml
+name: Security Scan
+on: [push, pull_request]
+
+jobs:
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Run MCP Sentinel (Docker)
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}:/workspace \
+            ghcr.io/beejak/mcp-sentinel:2.5.0 \
+            scan /workspace --enable-semgrep --fail-on high --output sarif --output-file /workspace/results.sarif
+
+      - name: Upload SARIF
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: results.sarif
+```
+
+**Binary Installation (Alternative):**
+```yaml
 name: Security Scan
 on: [push, pull_request]
 
@@ -658,30 +684,85 @@ jobs:
 ```
 
 ### GitLab CI
+
+**🐳 Using Docker (Recommended):**
 ```yaml
 # .gitlab-ci.yml
 security_scan:
   stage: test
-  image: rust:latest
+  image: docker:latest
+  services:
+    - docker:dind
   script:
-    - cargo install mcp-sentinel
-    - pip install semgrep
-    - mcp-sentinel scan . --enable-semgrep --fail-on high --output json --output-file report.json
+    - docker run --rm -v $(pwd):/workspace ghcr.io/beejak/mcp-sentinel:2.5.0
+        scan /workspace --enable-semgrep --fail-on high --output json --output-file /workspace/report.json
   artifacts:
     reports:
       codequality: report.json
   allow_failure: false
 ```
 
-### Docker
-```dockerfile
-FROM rust:1.70 as scanner
-RUN cargo install mcp-sentinel && pip install semgrep
+**Binary Installation (Alternative):**
+```yaml
+# .gitlab-ci.yml
+security_scan:
+  stage: test
+  image: rust:latest
+  script:
+    - apt-get update && apt-get install -y wget
+    - wget https://github.com/beejak/MCP_Scanner/releases/download/v2.5.0/mcp-sentinel-linux-x86_64
+    - chmod +x mcp-sentinel-linux-x86_64
+    - ./mcp-sentinel-linux-x86_64 scan . --enable-semgrep --fail-on high --output json --output-file report.json
+  artifacts:
+    reports:
+      codequality: report.json
+  allow_failure: false
+```
 
-FROM alpine:latest
-COPY --from=scanner /usr/local/cargo/bin/mcp-sentinel /usr/local/bin/
-COPY --from=scanner /usr/local/bin/semgrep /usr/local/bin/
-ENTRYPOINT ["mcp-sentinel"]
+### CircleCI
+```yaml
+# .circleci/config.yml
+version: 2.1
+
+jobs:
+  security-scan:
+    docker:
+      - image: docker:latest
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Run MCP Sentinel
+          command: |
+            docker run --rm \
+              -v $(pwd):/workspace \
+              ghcr.io/beejak/mcp-sentinel:2.5.0 \
+              scan /workspace --enable-semgrep --fail-on high
+
+workflows:
+  security:
+    jobs:
+      - security-scan
+```
+
+### Jenkins Pipeline
+```groovy
+// Jenkinsfile
+pipeline {
+    agent any
+
+    stages {
+        stage('Security Scan') {
+            steps {
+                script {
+                    docker.image('ghcr.io/beejak/mcp-sentinel:2.5.0').inside('-v $WORKSPACE:/workspace') {
+                        sh 'mcp-sentinel scan /workspace --enable-semgrep --fail-on high'
+                    }
+                }
+            }
+        }
+    }
+}
 ```
 
 ### Pre-Commit Hook
