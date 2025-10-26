@@ -4,7 +4,7 @@
 //! CVSS scores, and real-world incident information.
 
 use anyhow::{Context, Result};
-use log::{debug, warn};
+use tracing::{debug, warn};
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
 
