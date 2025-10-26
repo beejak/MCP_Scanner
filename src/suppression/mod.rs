@@ -326,13 +326,21 @@ pub struct VulnerabilityWithReason {
     pub vulnerability: Vulnerability,
 
     /// Reason for suppression
-    pub suppression_reason: String,
+    pub suppression_reason: Option<String>,
 
     /// ID of suppression rule that matched
     pub suppression_id: String,
 
     /// Author of suppression
     pub suppression_author: Option<String>,
+}
+
+impl std::ops::Deref for VulnerabilityWithReason {
+    type Target = Vulnerability;
+
+    fn deref(&self) -> &Self::Target {
+        &self.vulnerability
+    }
 }
 
 /// Suppression statistics
