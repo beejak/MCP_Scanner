@@ -214,6 +214,8 @@ impl SemanticEngine {
         let mut vulnerabilities = Vec::new();
         vulnerabilities.extend(self.detect_js_command_injection(&tree, code, file_path)?);
         vulnerabilities.extend(self.detect_js_xss(&tree, code, file_path)?);
+        vulnerabilities.extend(self.detect_js_weak_rng(&tree, code, file_path)?);
+        vulnerabilities.extend(self.detect_js_fs_path_traversal(&tree, code, file_path)?);
 
         info!(
             "TypeScript analysis completed in {:?}, found {} vulnerabilities in {}",
