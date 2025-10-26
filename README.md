@@ -94,6 +94,8 @@ MCP Sentinel is a next-generation security scanner for Model Context Protocol (M
 
 ## 🚀 Quick Start
 
+> **💡 New to MCP Sentinel?** Check out the **[⚡ Command Cheat Sheet](docs/CHEATSHEET.md)** for copy-paste examples and common workflows.
+
 ### Installation
 
 ```bash
