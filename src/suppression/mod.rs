@@ -267,7 +267,18 @@ impl SuppressionManager {
 
         let filtered: Vec<Vulnerability> = vulnerabilities
             .into_iter()
-            .filter(|v| !self.should_suppress(v).unwrap_or(false))
+            .filter(|v| {
+                match self.should_suppress(v) {
+                    Ok(should_suppress) => !should_suppress,
+                    Err(e) => {
+                        // Fail-open: if suppression check errors, don't suppress (show vulnerability)
+                        // This is safer than hiding potential vulnerabilities due to errors
+                        warn!("Error checking suppression for {}: {}. Not suppressing (fail-open).",
+                              v.vuln_type.name(), e);
+                        true  // Don't suppress on error
+                    }
+                }
+            })
             .collect();
 
         let suppressed_count = original_count - filtered.len();
