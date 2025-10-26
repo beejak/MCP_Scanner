@@ -71,6 +71,7 @@ use anyhow::Result;
 use regex::Regex;
 use serde_json::Value;
 use std::sync::LazyLock;
+use tracing::{debug, info};
 
 /// Detect security issues in MCP tool descriptions.
 ///
@@ -80,15 +81,25 @@ use std::sync::LazyLock;
 /// - JSON: Claude Desktop config.json format
 /// - TypeScript: MCP server source code with tool definitions
 pub fn detect(content: &str, file_path: &str) -> Result<Vec<Vulnerability>> {
+    info!("Analyzing MCP tool descriptions in {}", file_path);
+    debug!("Attempting to parse as JSON MCP manifest");
     let mut vulnerabilities = Vec::new();
 
     // Try parsing as JSON first (most common)
     if let Ok(json) = serde_json::from_str::<Value>(content) {
+        debug!("Successfully parsed as JSON, analyzing tool definitions");
         vulnerabilities.extend(analyze_json_tools(&json, file_path)?);
+    } else {
+        debug!("Not valid JSON, analyzing as TypeScript source");
     }
 
     // Also scan as text for TypeScript tool definitions
     vulnerabilities.extend(analyze_text_tools(content, file_path)?);
+
+    info!(
+        "MCP tool analysis completed, found {} security issues in tool descriptions",
+        vulnerabilities.len()
+    );
 
     Ok(vulnerabilities)
 }
