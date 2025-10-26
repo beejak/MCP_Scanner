@@ -136,11 +136,15 @@ impl SemanticEngine {
     /// 3. Perform dataflow analysis (track variables from source to sink)
     /// 4. Generate vulnerability findings with context
     pub fn analyze_python(&mut self, code: &str, file_path: &str) -> Result<Vec<Vulnerability>> {
+        debug!("Starting Python semantic analysis on {}", file_path);
+        let start = std::time::Instant::now();
+
         let tree = self
             .python_parser
             .parse(code, None)
             .context("Failed to parse Python code")?;
 
+        debug!("Python AST parsed successfully, running vulnerability detection");
         let mut vulnerabilities = Vec::new();
 
         // Pattern-based detection using Tree-sitter queries
@@ -151,6 +155,13 @@ impl SemanticEngine {
 
         // Dataflow-based detection
         vulnerabilities.extend(self.detect_python_tainted_dataflow(&tree, code, file_path)?);
+
+        info!(
+            "Python analysis completed in {:?}, found {} vulnerabilities in {}",
+            start.elapsed(),
+            vulnerabilities.len(),
+            file_path
+        );
 
         Ok(vulnerabilities)
     }
