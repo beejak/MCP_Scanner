@@ -91,6 +91,8 @@ pub struct ThreatIntelService {
 impl ThreatIntelService {
     /// Create a new threat intelligence service
     pub fn new() -> Result<Self> {
+        info!("Initializing threat intelligence service (VulnerableMCP, MITRE ATT&CK, NVD)");
+
         Ok(Self {
             vulnerable_mcp: vulnerable_mcp::VulnerableMcpClient::new()?,
             mitre: mitre_attack::MitreAttackMapper::new()?,
