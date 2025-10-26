@@ -11,24 +11,49 @@ MCP Sentinel is a next-generation security scanner for Model Context Protocol (M
 
 ## ⚡ Features
 
-- **5 Detection Categories (Phase 1 Complete)**:
-  - 🔐 Secrets Detection (15+ patterns including AWS keys, API keys, private keys)
-  - 💉 Command Injection (Python, JavaScript/TypeScript patterns)
-  - 📁 Sensitive File Access (SSH keys, AWS credentials, browser cookies)
-  - 🎣 Tool Poisoning (invisible Unicode, malicious keywords)
-  - 🔓 Prompt Injection (jailbreak patterns, system prompt manipulation)
+### 🚀 Phase 2.5 - Advanced Analysis (NEW!)
 
-- **Beautiful Terminal Output**:
-  - Colored, hierarchical vulnerability display
-  - Risk scoring (0-100)
-  - Detailed remediation guidance
-  - Code snippets with location info
+- **🌳 Tree-sitter AST Parsing**: Semantic code analysis for Python, JavaScript, TypeScript, Go
+  - Dataflow analysis tracking tainted variables from sources to sinks
+  - Context-aware vulnerability detection beyond regex patterns
+  - Pattern-based detection for command injection, SQL injection, path traversal
 
-- **Multiple Output Formats**:
-  - Terminal (with colors and progress bars)
-  - JSON (for CI/CD integration)
-  - SARIF 2.1.0 (GitHub Code Scanning, GitLab, SonarQube, VS Code)
-  - HTML, PDF (coming in Phase 2-4)
+- **🔍 Semgrep Integration**: Access 1000+ community SAST rules
+  - Security-focused rule filtering
+  - External process integration with seamless result mapping
+  - Configurable severity thresholds
+
+- **📊 HTML Report Generator**: Enterprise-ready interactive reports
+  - Self-contained HTML with inline CSS/JavaScript
+  - Risk scoring (0-100) with visual indicators
+  - Expandable vulnerability cards with full details
+  - Perfect for stakeholder presentations and compliance audits
+
+- **🐙 GitHub URL Scanning**: Frictionless repository audits
+  - Direct URL scanning without manual cloning
+  - Shallow cloning (--depth=1) for 10-20x faster downloads
+  - Parse owner/repo/branch/tag/commit from any GitHub URL
+
+- **🛡️ Tool Description Analysis**: MCP-specific prompt injection detection
+  - Detect AI manipulation attempts in tool metadata
+  - Identify misleading descriptions and hidden instructions
+  - Flag social engineering in tool documentation
+
+### 🔒 Core Detection (Phase 1-2)
+
+- **Secrets Detection**: 15+ patterns including AWS keys, API keys, JWT tokens, private keys
+- **Command Injection**: Python, JavaScript/TypeScript dangerous function detection
+- **Sensitive File Access**: SSH keys, AWS credentials, browser cookies, shell RC files
+- **Tool Poisoning**: Invisible Unicode, malicious keywords, hidden markers
+- **Prompt Injection**: Jailbreak patterns, system prompt manipulation, role confusion
+- **MCP Config Security**: Insecure HTTP, hardcoded credentials, untrusted executables
+
+### 📤 Output Formats
+
+- **Terminal**: Colored, hierarchical vulnerability display with progress bars
+- **JSON**: Structured output for CI/CD integration
+- **SARIF 2.1.0**: GitHub Code Scanning, GitLab, SonarQube, VS Code integration
+- **HTML**: Interactive dashboards with risk scoring and charts (Phase 2.5)
 
 - **High Performance**:
   - Written in Rust for blazing speed
