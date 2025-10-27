@@ -421,7 +421,7 @@ For CI/CD integration and programmatic analysis:
 
 ```json
 {
-  "version": "2.5.0",
+  "version": "2.6.0",
   "scan_metadata": {
     "timestamp": "2025-10-26T10:30:45Z",
     "target": "https://github.com/example-org/mcp-filesystem-server",
@@ -493,9 +493,9 @@ For CI/CD integration and programmatic analysis:
 
 ---
 
-### 🚀 Quick Comparison: Before vs After v2.5.0
+### 🚀 Quick Comparison: Before vs After v2.6.0
 
-| Aspect | v2.0.0 | v2.5.0 (Current) |
+| Aspect | v2.0.0 | v2.6.0 (Current) |
 |--------|--------|------------------|
 | **Detection** | 2 engines | **5 engines** 🆕 |
 | **Coverage** | Baseline +60% | **+85%** 🆕 |
