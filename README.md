@@ -828,10 +828,48 @@ mcp-sentinel scan tests/fixtures/vulnerable_servers/test-server/
 
 ## 📖 Documentation
 
-- [Installation Guide](docs/installation.md) (coming soon)
-- [User Guide](docs/user-guide/) (coming soon)
-- [API Reference](docs/reference/) (coming soon)
-- [Contributing](docs/contributing/) (coming soon)
+### 📚 User Guides
+
+- **[⚡ Installation Guide](INSTALLATION.md)** - Platform-specific setup, Docker, binaries, Cargo
+- **[⚡ Command Cheat Sheet](docs/CHEATSHEET.md)** - Quick reference for common workflows
+- **[📘 Complete Docker Guide](docs/DOCKER.md)** - CI/CD integration, Ollama, multi-service setup
+- **[📊 CLI Reference](docs/CLI_REFERENCE.md)** - All commands, flags, and options
+- **[🐙 Release Process](docs/RELEASE_PROCESS.md)** - How releases are managed
+- **[🔧 CI/CD Integration](docs/CI_CD_INTEGRATION.md)** - GitHub Actions, GitLab, Jenkins examples
+
+### 🎯 Strategic Documentation
+
+- **[🛡️ Attack Vectors](docs/ATTACK_VECTORS.md)** - 7 enterprise attack scenarios MCP Sentinel prevents
+  - Tool poisoning, rug pulls, cross-server shadowing, command injection
+  - Real-world impact analysis and financial implications
+  - MITRE ATT&CK mappings and academic research references
+
+- **[🚀 IDE Integration Plan](docs/IDE_INTEGRATION_PLAN.md)** - Phase 3.0 roadmap for developer tools
+  - VS Code, JetBrains, Vim/Neovim plugin architecture
+  - Language Server Protocol (LSP) implementation strategy
+  - Real-time security diagnostics and one-click fixes
+
+- **[📚 Research Positioning](docs/RESEARCH_POSITIONING.md)** - Academic publication strategy
+  - Target conferences (USENIX Security, IEEE S&P, ACM CCS)
+  - Research contributions and novel aspects
+  - Dataset preparation and evaluation methodology
+
+- **[✅ Pre-Release Checklist](PRE_RELEASE_CHECKLIST.md)** - Systematic release verification (867 lines)
+  - 8-phase process from code review to post-release monitoring
+  - Prevents issues encountered in v2.6.0 release
+  - Git workflow best practices and verification steps
+
+- **[📖 Lessons Learned](LESSONS_LEARNED.md)** - Release retrospectives and process improvements
+  - v2.6.0 release analysis: what went wrong and right
+  - Anti-patterns to avoid
+  - Metrics for release success
+
+### 🏗️ Architecture & Development
+
+- **[🏛️ Architecture Documentation](docs/ARCHITECTURE_PHASE_2_5.md)** - System design and component overview
+- **[🧪 Test Strategy](docs/TEST_STRATEGY.md)** - Testing approach and coverage requirements
+- **[📊 QA Checklist](docs/QA_CHECKLIST.md)** - Quality assurance procedures
+- **[🔒 Error Handling](ERROR_HANDLING.md)** - Error handling patterns and recovery strategies
 
 ## 🤝 Contributing
 
