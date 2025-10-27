@@ -290,7 +290,7 @@ Configuration priority: CLI flags > project config (./.mcp-sentinel.yaml) > user
 
 ### 📹 Demo Videos (Coming Soon)
 
-We're creating GIF demonstrations of v2.5.0 features. See [GIF Recording Guide](docs/GIF_RECORDING_GUIDE.md) for details.
+We're creating GIF demonstrations of v2.6.0 features. See [GIF Recording Guide](docs/GIF_RECORDING_GUIDE.md) for details.
 
 **Planned demos:**
 - Quick scan with terminal output
@@ -305,13 +305,13 @@ We're creating GIF demonstrations of v2.5.0 features. See [GIF Recording Guide](
 
 ### 📊 Sample Terminal Output
 
-Here's what a comprehensive v2.5.0 scan looks like with all engines enabled:
+Here's what a comprehensive v2.6.0 scan looks like with all engines enabled:
 
 <details>
 <summary><b>🚀 Click to see full terminal output example</b> (Multi-engine scan with GitHub URL)</summary>
 
 ```
-🛡️  MCP Sentinel v2.5.0 - Enterprise Security Scanner
+🛡️  MCP Sentinel v2.6.0 - Enterprise Security Scanner
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🚀 SCAN CONFIGURATION
@@ -394,7 +394,7 @@ Total: 29 vulnerabilities detected
 
 ### 🎨 HTML Report Preview
 
-v2.5.0's HTML reports provide interactive dashboards perfect for stakeholders and compliance audits:
+v2.6.0's HTML reports provide interactive dashboards perfect for stakeholders and compliance audits:
 
 **Features:**
 - 📊 Risk Score Dashboard (0-100 with color coding)
