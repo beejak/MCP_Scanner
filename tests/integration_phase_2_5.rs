@@ -40,7 +40,8 @@ use mcp_sentinel::engines::semantic::SemanticEngine;
 use mcp_sentinel::output::html;
 use mcp_sentinel::utils::github::GitHubScanner;
 use mcp_sentinel::detectors::mcp_tools;
-use mcp_sentinel::models::vulnerability::{ScanResult, Vulnerability, Severity};
+use mcp_sentinel::models::vulnerability::{Vulnerability, Severity};
+use mcp_sentinel::models::scan_result::ScanResult;
 
 /// Helper: Create test fixture directory with vulnerable code
 ///

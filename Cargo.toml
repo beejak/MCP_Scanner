@@ -97,19 +97,10 @@ path = "src/lib.rs"
 
 [dev-dependencies]
 tokio-test = "0.4"
-criterion = "0.5"
 proptest = "1"
 mockall = "0.12"
 assert_cmd = "2"
 predicates = "3"
-
-[[bench]]
-name = "scan_benchmark"
-harness = false
-
-[[bench]]
-name = "detection_benchmark"
-harness = false
 
 [profile.release]
 opt-level = 3

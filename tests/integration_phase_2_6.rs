@@ -25,7 +25,8 @@ use std::fs;
 use std::path::PathBuf;
 use tempfile::TempDir;
 
-use mcp_sentinel::models::vulnerability::{ScanResult, Vulnerability, Severity, VulnerabilityType, Location};
+use mcp_sentinel::models::vulnerability::{Vulnerability, Severity, VulnerabilityType, Location};
+use mcp_sentinel::models::scan_result::ScanResult;
 use mcp_sentinel::storage::baseline::BaselineManager;
 use mcp_sentinel::output::{json, sarif};
 use mcp_sentinel::suppression::SuppressionManager;
