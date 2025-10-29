@@ -61,16 +61,16 @@ use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use tracing::{debug, info, warn};
 
-pub mod openai;
 pub mod anthropic;
-pub mod ollama;
-pub mod mistral;
-pub mod cohere;
-pub mod huggingface;
-pub mod google;
 pub mod azure;
+pub mod cohere;
+pub mod google;
+pub mod huggingface;
+pub mod mistral;
+pub mod ollama;
+pub mod openai;
 
-use crate::models::{Vulnerability, ai_finding::AIFinding};
+use crate::models::{ai_finding::AIFinding, Vulnerability};
 
 /// Context information for AI analysis
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -117,11 +117,7 @@ pub trait LLMProvider: Send + Sync {
     /// - API rate limits
     /// - Invalid API keys
     /// - Model unavailable
-    async fn analyze_code(
-        &self,
-        code: &str,
-        context: &AnalysisContext,
-    ) -> Result<AIFinding>;
+    async fn analyze_code(&self, code: &str, context: &AnalysisContext) -> Result<AIFinding>;
 
     /// Explain a detected vulnerability in detail
     ///
@@ -133,11 +129,7 @@ pub trait LLMProvider: Send + Sync {
     /// # Returns
     ///
     /// A human-readable explanation of why this is a vulnerability
-    async fn explain_vulnerability(
-        &self,
-        vuln: &Vulnerability,
-        code: &str,
-    ) -> Result<String>;
+    async fn explain_vulnerability(&self, vuln: &Vulnerability, code: &str) -> Result<String>;
 
     /// Generate actionable remediation guidance
     ///
@@ -148,10 +140,7 @@ pub trait LLMProvider: Send + Sync {
     /// # Returns
     ///
     /// Specific steps to fix the vulnerability, including code examples
-    async fn generate_remediation(
-        &self,
-        vuln: &Vulnerability,
-    ) -> Result<String>;
+    async fn generate_remediation(&self, vuln: &Vulnerability) -> Result<String>;
 
     /// Get the provider name
     fn name(&self) -> &str;
@@ -397,7 +386,10 @@ impl ProviderFactory {
         // Try primary provider
         match Self::create_provider(&config.primary, config).await {
             Ok(provider) => {
-                info!("Successfully initialized primary provider: {}", config.primary);
+                info!(
+                    "Successfully initialized primary provider: {}",
+                    config.primary
+                );
                 return Ok(provider);
             }
             Err(e) => {
@@ -430,10 +422,7 @@ impl ProviderFactory {
     }
 
     /// Create a specific provider by name
-    async fn create_provider(
-        name: &str,
-        config: &ProviderConfig,
-    ) -> Result<Arc<dyn LLMProvider>> {
+    async fn create_provider(name: &str, config: &ProviderConfig) -> Result<Arc<dyn LLMProvider>> {
         match name.to_lowercase().as_str() {
             "openai" => {
                 let provider = openai::OpenAIProvider::new(&config.providers.openai)

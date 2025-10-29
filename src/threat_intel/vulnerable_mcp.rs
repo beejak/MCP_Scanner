@@ -5,9 +5,9 @@
 
 use crate::models::vulnerability::{Vulnerability, VulnerabilityType};
 use anyhow::{Context, Result};
-use tracing::{debug, warn};
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
+use tracing::{debug, warn};
 
 /// VulnerableMCP API endpoint
 const VULNERABLE_MCP_API: &str = "https://api.vulnerablemcp.com/v1";
@@ -84,8 +84,14 @@ impl VulnerableMcpClient {
     }
 
     /// Check vulnerability against VulnerableMCP database
-    pub async fn check_vulnerability(&self, vulnerability: &Vulnerability) -> Result<VulnerableMcpIntel> {
-        debug!("Checking VulnerableMCP for vulnerability: {}", vulnerability.id);
+    pub async fn check_vulnerability(
+        &self,
+        vulnerability: &Vulnerability,
+    ) -> Result<VulnerableMcpIntel> {
+        debug!(
+            "Checking VulnerableMCP for vulnerability: {}",
+            vulnerability.id
+        );
 
         // Build query parameters based on vulnerability type
         let query = self.build_query(vulnerability);
@@ -111,7 +117,8 @@ impl VulnerableMcpClient {
         };
 
         // Include CWE if available
-        let cwe_param = vulnerability.cwe_id
+        let cwe_param = vulnerability
+            .cwe_id
             .map(|cwe| format!("&cwe={}", cwe))
             .unwrap_or_default();
 
@@ -182,9 +189,10 @@ impl VulnerableMcpClient {
             if let Some(cvss) = vuln.cvss_score {
                 // Use highest CVSS score
                 intel.cvss_score = Some(
-                    intel.cvss_score
+                    intel
+                        .cvss_score
                         .map(|existing| existing.max(cvss))
-                        .unwrap_or(cvss)
+                        .unwrap_or(cvss),
                 );
             }
 

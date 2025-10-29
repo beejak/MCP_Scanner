@@ -53,8 +53,8 @@ use crate::models::{
 };
 use anyhow::{Context, Result};
 use std::collections::{HashMap, HashSet};
-use tree_sitter::{Language, Node, Parser, Query, QueryCursor, Tree};
 use tracing::{debug, info};
+use tree_sitter::{Language, Node, Parser, Query, QueryCursor, Tree};
 
 extern "C" {
     fn tree_sitter_python() -> Language;
@@ -281,11 +281,8 @@ impl SemanticEngine {
               arguments: (argument_list) @args)
         "#;
 
-        let query = Query::new(
-            unsafe { tree_sitter_python() },
-            query_str,
-        )
-        .context("Failed to create command injection query")?;
+        let query = Query::new(unsafe { tree_sitter_python() }, query_str)
+            .context("Failed to create command injection query")?;
 
         let mut cursor = QueryCursor::new();
         let matches = cursor.matches(&query, tree.root_node(), code.as_bytes());
@@ -346,11 +343,8 @@ impl SemanticEngine {
                 (string) @query))
         "#;
 
-        let query = Query::new(
-            unsafe { tree_sitter_python() },
-            query_str,
-        )
-        .context("Failed to create SQL injection query")?;
+        let query = Query::new(unsafe { tree_sitter_python() }, query_str)
+            .context("Failed to create SQL injection query")?;
 
         let mut cursor = QueryCursor::new();
         let matches = cursor.matches(&query, tree.root_node(), code.as_bytes());
@@ -407,11 +401,8 @@ impl SemanticEngine {
                 (identifier) @path_var))
         "#;
 
-        let query = Query::new(
-            unsafe { tree_sitter_python() },
-            query_str,
-        )
-        .context("Failed to create path traversal query")?;
+        let query = Query::new(unsafe { tree_sitter_python() }, query_str)
+            .context("Failed to create path traversal query")?;
 
         let mut cursor = QueryCursor::new();
         let matches = cursor.matches(&query, tree.root_node(), code.as_bytes());
@@ -463,11 +454,8 @@ impl SemanticEngine {
                 attribute: (identifier) @func (#eq? @func "loads")))
         "#;
 
-        let query = Query::new(
-            unsafe { tree_sitter_python() },
-            query_str,
-        )
-        .context("Failed to create deserialization query")?;
+        let query = Query::new(unsafe { tree_sitter_python() }, query_str)
+            .context("Failed to create deserialization query")?;
 
         let mut cursor = QueryCursor::new();
         let matches = cursor.matches(&query, tree.root_node(), code.as_bytes());
@@ -632,10 +620,7 @@ impl SemanticEngine {
             if let (Some(module_capture), Some(func_capture)) =
                 (match_.captures.get(0), match_.captures.get(1))
             {
-                let module = module_capture
-                    .node
-                    .utf8_text(code.as_bytes())
-                    .unwrap_or("");
+                let module = module_capture.node.utf8_text(code.as_bytes()).unwrap_or("");
                 let func = func_capture.node.utf8_text(code.as_bytes()).unwrap_or("");
 
                 if module == "os" && (func == "system" || func == "popen")
@@ -890,8 +875,11 @@ impl SemanticEngine {
               constructor: (identifier) @func (#eq? @func "Function"))
         "#;
 
-        let query5 = Query::new(unsafe { tree_sitter_javascript() }, function_constructor_query)
-            .context("Failed to create Function constructor query")?;
+        let query5 = Query::new(
+            unsafe { tree_sitter_javascript() },
+            function_constructor_query,
+        )
+        .context("Failed to create Function constructor query")?;
 
         let matches5 = cursor.matches(&query5, tree.root_node(), code.as_bytes());
 
@@ -1155,11 +1143,16 @@ impl SemanticEngine {
 
         // Dangerous fs methods
         let dangerous_methods = vec![
-            "readFile", "readFileSync",
-            "writeFile", "writeFileSync",
-            "appendFile", "appendFileSync",
-            "readdir", "readdirSync",
-            "open", "openSync",
+            "readFile",
+            "readFileSync",
+            "writeFile",
+            "writeFileSync",
+            "appendFile",
+            "appendFileSync",
+            "readdir",
+            "readdirSync",
+            "open",
+            "openSync",
         ];
 
         for match_ in matches {

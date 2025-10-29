@@ -9,18 +9,9 @@ use super::vulnerability::Severity;
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "provider", rename_all = "lowercase")]
 pub enum LlmConfig {
-    OpenAI {
-        api_key: String,
-        model: String,
-    },
-    Anthropic {
-        api_key: String,
-        model: String,
-    },
-    Ollama {
-        base_url: String,
-        model: String,
-    },
+    OpenAI { api_key: String, model: String },
+    Anthropic { api_key: String, model: String },
+    Ollama { base_url: String, model: String },
 }
 
 /// Scanning configuration

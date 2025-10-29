@@ -36,12 +36,12 @@ use std::path::PathBuf;
 use tempfile::TempDir;
 
 // Import the modules we're testing
+use mcp_sentinel::detectors::mcp_tools;
 use mcp_sentinel::engines::semantic::SemanticEngine;
+use mcp_sentinel::models::scan_result::ScanResult;
+use mcp_sentinel::models::vulnerability::{Severity, Vulnerability};
 use mcp_sentinel::output::html;
 use mcp_sentinel::utils::github::GitHubScanner;
-use mcp_sentinel::detectors::mcp_tools;
-use mcp_sentinel::models::vulnerability::{Vulnerability, Severity};
-use mcp_sentinel::models::scan_result::ScanResult;
 
 /// Helper: Create test fixture directory with vulnerable code
 ///
@@ -198,24 +198,31 @@ async fn test_semantic_analysis_detects_python_command_injection() -> Result<()>
     let vulnerabilities = engine.analyze_python(&code, python_file.to_str().unwrap())?;
 
     // Assert: Should detect command injection vulnerabilities
-    assert!(!vulnerabilities.is_empty(), "Should detect at least one vulnerability");
+    assert!(
+        !vulnerabilities.is_empty(),
+        "Should detect at least one vulnerability"
+    );
 
     let command_injection_found = vulnerabilities.iter().any(|v| {
-        v.title.contains("Command Injection") ||
-        v.description.contains("os.system") ||
-        v.description.contains("subprocess")
+        v.title.contains("Command Injection")
+            || v.description.contains("os.system")
+            || v.description.contains("subprocess")
     });
 
-    assert!(command_injection_found,
+    assert!(
+        command_injection_found,
         "Should detect command injection vulnerability. Found: {:?}",
         vulnerabilities.iter().map(|v| &v.title).collect::<Vec<_>>()
     );
 
     // Verify severity is appropriate (High or Critical)
-    let high_severity = vulnerabilities.iter().any(|v| {
-        matches!(v.severity, Severity::High | Severity::Critical)
-    });
-    assert!(high_severity, "Command injection should be High or Critical severity");
+    let high_severity = vulnerabilities
+        .iter()
+        .any(|v| matches!(v.severity, Severity::High | Severity::Critical));
+    assert!(
+        high_severity,
+        "Command injection should be High or Critical severity"
+    );
 
     Ok(())
 }
@@ -243,12 +250,12 @@ async fn test_semantic_analysis_detects_javascript_sql_injection() -> Result<()>
     let vulnerabilities = engine.analyze_javascript(&code, js_file.to_str().unwrap())?;
 
     // Assert
-    let sql_injection_found = vulnerabilities.iter().any(|v| {
-        v.title.contains("SQL Injection") ||
-        v.description.to_lowercase().contains("sql")
-    });
+    let sql_injection_found = vulnerabilities
+        .iter()
+        .any(|v| v.title.contains("SQL Injection") || v.description.to_lowercase().contains("sql"));
 
-    assert!(sql_injection_found,
+    assert!(
+        sql_injection_found,
         "Should detect SQL injection vulnerability. Found: {:?}",
         vulnerabilities.iter().map(|v| &v.title).collect::<Vec<_>>()
     );
@@ -280,11 +287,11 @@ async fn test_semantic_analysis_detects_typescript_path_traversal() -> Result<()
 
     // Assert
     let path_traversal_found = vulnerabilities.iter().any(|v| {
-        v.title.contains("Path Traversal") ||
-        v.description.to_lowercase().contains("path")
+        v.title.contains("Path Traversal") || v.description.to_lowercase().contains("path")
     });
 
-    assert!(path_traversal_found,
+    assert!(
+        path_traversal_found,
         "Should detect path traversal vulnerability. Found: {:?}",
         vulnerabilities.iter().map(|v| &v.title).collect::<Vec<_>>()
     );
@@ -336,9 +343,18 @@ async fn test_semgrep_integration_full_pipeline() -> Result<()> {
     // Verify result format
     if !vulnerabilities.is_empty() {
         let first_vuln = &vulnerabilities[0];
-        assert!(!first_vuln.title.is_empty(), "Vulnerability should have title");
-        assert!(!first_vuln.description.is_empty(), "Vulnerability should have description");
-        assert!(first_vuln.location.file.exists(), "Vulnerability location should reference existing file");
+        assert!(
+            !first_vuln.title.is_empty(),
+            "Vulnerability should have title"
+        );
+        assert!(
+            !first_vuln.description.is_empty(),
+            "Vulnerability should have description"
+        );
+        assert!(
+            first_vuln.location.file.exists(),
+            "Vulnerability location should reference existing file"
+        );
     }
 
     Ok(())
@@ -395,7 +411,9 @@ async fn test_html_report_generation_from_scan() -> Result<()> {
                 line: Some(25),
                 column: Some(10),
             },
-            code_snippet: Some("const query = \"SELECT * FROM users WHERE id = \" + userId;".to_string()),
+            code_snippet: Some(
+                "const query = \"SELECT * FROM users WHERE id = \" + userId;".to_string(),
+            ),
             impact: Some("Data breach, unauthorized access".to_string()),
             remediation: Some("Use parameterized queries".to_string()),
             confidence: 0.90,
@@ -436,30 +454,58 @@ async fn test_html_report_generation_from_scan() -> Result<()> {
     let html_content = html::generate(&scan_result)?;
 
     // Assert: Validate HTML structure and content
-    assert!(html_content.contains("<!DOCTYPE html>"), "Should be valid HTML5");
+    assert!(
+        html_content.contains("<!DOCTYPE html>"),
+        "Should be valid HTML5"
+    );
     assert!(html_content.contains("<html"), "Should have html tag");
     assert!(html_content.contains("</html>"), "Should close html tag");
 
     // Check for vulnerability content
-    assert!(html_content.contains("Command Injection"), "Should include vulnerability titles");
-    assert!(html_content.contains("SQL Injection"), "Should include all vulnerabilities");
-    assert!(html_content.contains("Hardcoded API Key"), "Should include all severities");
+    assert!(
+        html_content.contains("Command Injection"),
+        "Should include vulnerability titles"
+    );
+    assert!(
+        html_content.contains("SQL Injection"),
+        "Should include all vulnerabilities"
+    );
+    assert!(
+        html_content.contains("Hardcoded API Key"),
+        "Should include all severities"
+    );
 
     // Check for risk score
-    assert!(html_content.contains("Risk Score"), "Should show risk score");
-    assert!(html_content.contains("75") || html_content.contains("risk"), "Should display calculated risk");
+    assert!(
+        html_content.contains("Risk Score"),
+        "Should show risk score"
+    );
+    assert!(
+        html_content.contains("75") || html_content.contains("risk"),
+        "Should display calculated risk"
+    );
 
     // Check for interactivity (JavaScript)
-    assert!(html_content.contains("<script>") || html_content.contains("script"),
-        "Should include JavaScript for interactivity");
+    assert!(
+        html_content.contains("<script>") || html_content.contains("script"),
+        "Should include JavaScript for interactivity"
+    );
 
     // Check for styling (CSS)
-    assert!(html_content.contains("<style>") || html_content.contains("style"),
-        "Should include CSS for styling");
+    assert!(
+        html_content.contains("<style>") || html_content.contains("style"),
+        "Should include CSS for styling"
+    );
 
     // Verify self-contained (no external resources)
-    assert!(!html_content.contains("http://"), "Should not load external HTTP resources");
-    assert!(!html_content.contains("https://"), "Should not load external HTTPS resources");
+    assert!(
+        !html_content.contains("http://"),
+        "Should not load external HTTP resources"
+    );
+    assert!(
+        !html_content.contains("https://"),
+        "Should not load external HTTPS resources"
+    );
 
     println!("Generated HTML report: {} bytes", html_content.len());
 
@@ -493,10 +539,16 @@ async fn test_html_report_handles_empty_scan() -> Result<()> {
     let html_content = html::generate(&scan_result)?;
 
     // Assert
-    assert!(html_content.contains("<!DOCTYPE html>"), "Should generate valid HTML");
-    assert!(html_content.contains("0") || html_content.contains("No vulnerabilities") ||
-            html_content.contains("clean"),
-        "Should indicate clean scan");
+    assert!(
+        html_content.contains("<!DOCTYPE html>"),
+        "Should generate valid HTML"
+    );
+    assert!(
+        html_content.contains("0")
+            || html_content.contains("No vulnerabilities")
+            || html_content.contains("clean"),
+        "Should indicate clean scan"
+    );
 
     Ok(())
 }
@@ -559,7 +611,10 @@ async fn test_github_scanner_checks_git_availability() -> Result<()> {
     if git_available {
         // Git is installed - can proceed with scanning
         let version = GitHubScanner::git_version()?;
-        assert!(version.contains("git version"), "Should return git version string");
+        assert!(
+            version.contains("git version"),
+            "Should return git version string"
+        );
         println!("Git available: {}", version);
     } else {
         // Git not installed - should return false (not error)
@@ -596,25 +651,29 @@ async fn test_mcp_tool_description_analysis() -> Result<()> {
     let vulnerabilities = mcp_tools::detect(&config_content, config_file.to_str().unwrap())?;
 
     // Assert: Should detect prompt injection and excessive permissions
-    assert!(!vulnerabilities.is_empty(),
-        "Should detect vulnerabilities in malicious tool descriptions");
+    assert!(
+        !vulnerabilities.is_empty(),
+        "Should detect vulnerabilities in malicious tool descriptions"
+    );
 
     let prompt_injection_found = vulnerabilities.iter().any(|v| {
-        v.title.to_lowercase().contains("prompt injection") ||
-        v.description.to_lowercase().contains("system:")
+        v.title.to_lowercase().contains("prompt injection")
+            || v.description.to_lowercase().contains("system:")
     });
 
-    assert!(prompt_injection_found,
+    assert!(
+        prompt_injection_found,
         "Should detect [SYSTEM:] prompt injection attempt. Found: {:?}",
         vulnerabilities.iter().map(|v| &v.title).collect::<Vec<_>>()
     );
 
     let excessive_permissions_found = vulnerabilities.iter().any(|v| {
-        v.description.to_lowercase().contains("full system access") ||
-        v.description.to_lowercase().contains("no restrictions")
+        v.description.to_lowercase().contains("full system access")
+            || v.description.to_lowercase().contains("no restrictions")
     });
 
-    assert!(excessive_permissions_found,
+    assert!(
+        excessive_permissions_found,
         "Should detect excessive permissions claims. Found: {:?}",
         vulnerabilities.iter().map(|v| &v.title).collect::<Vec<_>>()
     );
@@ -654,7 +713,7 @@ async fn test_full_phase_2_5_integration() -> Result<()> {
     let mut semantic_engine = SemanticEngine::new()?;
     let python_vulns = semantic_engine.analyze_python(
         &python_code,
-        fixture.path().join("vulnerable.py").to_str().unwrap()
+        fixture.path().join("vulnerable.py").to_str().unwrap(),
     )?;
     all_vulnerabilities.extend(python_vulns);
 
@@ -662,7 +721,7 @@ async fn test_full_phase_2_5_integration() -> Result<()> {
     let js_code = fs::read_to_string(fixture.path().join("database.js"))?;
     let js_vulns = semantic_engine.analyze_javascript(
         &js_code,
-        fixture.path().join("database.js").to_str().unwrap()
+        fixture.path().join("database.js").to_str().unwrap(),
     )?;
     all_vulnerabilities.extend(js_vulns);
 
@@ -670,7 +729,7 @@ async fn test_full_phase_2_5_integration() -> Result<()> {
     let config_content = fs::read_to_string(fixture.path().join("mcp_config.json"))?;
     let mcp_vulns = mcp_tools::detect(
         &config_content,
-        fixture.path().join("mcp_config.json").to_str().unwrap()
+        fixture.path().join("mcp_config.json").to_str().unwrap(),
     )?;
     all_vulnerabilities.extend(mcp_vulns);
 
@@ -686,27 +745,44 @@ async fn test_full_phase_2_5_integration() -> Result<()> {
     let html_report = html::generate(&scan_result)?;
 
     // Assert: Verify integration
-    assert!(!all_vulnerabilities.is_empty(),
-        "Should find vulnerabilities from multiple engines");
+    assert!(
+        !all_vulnerabilities.is_empty(),
+        "Should find vulnerabilities from multiple engines"
+    );
 
     // Verify we have findings from different engines
-    let has_python_findings = all_vulnerabilities.iter()
+    let has_python_findings = all_vulnerabilities
+        .iter()
         .any(|v| v.location.file.to_string_lossy().contains("vulnerable.py"));
-    let has_js_findings = all_vulnerabilities.iter()
+    let has_js_findings = all_vulnerabilities
+        .iter()
         .any(|v| v.location.file.to_string_lossy().contains("database.js"));
-    let has_mcp_findings = all_vulnerabilities.iter()
-        .any(|v| v.location.file.to_string_lossy().contains("mcp_config.json"));
+    let has_mcp_findings = all_vulnerabilities.iter().any(|v| {
+        v.location
+            .file
+            .to_string_lossy()
+            .contains("mcp_config.json")
+    });
 
     assert!(has_python_findings, "Should have Python findings");
     assert!(has_js_findings, "Should have JavaScript findings");
     assert!(has_mcp_findings, "Should have MCP tool findings");
 
     // Verify HTML report contains all findings
-    assert!(html_report.contains("<!DOCTYPE html>"), "Should generate valid HTML");
-    assert!(html_report.len() > 1000, "HTML report should be substantial");
+    assert!(
+        html_report.contains("<!DOCTYPE html>"),
+        "Should generate valid HTML"
+    );
+    assert!(
+        html_report.len() > 1000,
+        "HTML report should be substantial"
+    );
 
     println!("Full integration test passed:");
-    println!("  - Total vulnerabilities found: {}", all_vulnerabilities.len());
+    println!(
+        "  - Total vulnerabilities found: {}",
+        all_vulnerabilities.len()
+    );
     println!("  - HTML report size: {} bytes", html_report.len());
     println!("  - Engines integrated: semantic, mcp_tools, html");
 

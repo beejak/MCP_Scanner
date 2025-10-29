@@ -149,8 +149,10 @@ impl SemgrepEngine {
         info!("Initializing Semgrep integration engine");
         let semgrep_path = Self::find_semgrep_binary()?;
         info!("Semgrep binary found at: {}", semgrep_path.display());
-        debug!("Filter config: security_only={}, min_severity={:?}",
-            filter_config.security_only, filter_config.min_severity);
+        debug!(
+            "Filter config: security_only={}, min_severity={:?}",
+            filter_config.security_only, filter_config.min_severity
+        );
 
         Ok(Self {
             semgrep_path,
@@ -168,20 +170,18 @@ impl SemgrepEngine {
     /// - Don't block scanning
     pub fn is_available(&self) -> Result<bool> {
         debug!("Checking if Semgrep is available");
-        let output = Command::new(&self.semgrep_path)
-            .arg("--version")
-            .output();
+        let output = Command::new(&self.semgrep_path).arg("--version").output();
 
         match output {
             Ok(output) if output.status.success() => {
                 let version = String::from_utf8_lossy(&output.stdout);
                 info!("Semgrep is available: {}", version.trim());
                 Ok(true)
-            },
+            }
             _ => {
                 warn!("Semgrep not available - skipping Semgrep analysis");
                 Ok(false)
-            },
+            }
         }
     }
 
@@ -218,29 +218,32 @@ impl SemgrepEngine {
     pub async fn scan_directory(&self, directory: impl AsRef<Path>) -> Result<Vec<Vulnerability>> {
         let directory = directory.as_ref();
         info!("Running Semgrep scan on directory: {}", directory.display());
-        debug!("Semgrep command: semgrep --config=auto --json --quiet {:?}", directory);
+        debug!(
+            "Semgrep command: semgrep --config=auto --json --quiet {:?}",
+            directory
+        );
         let start = std::time::Instant::now();
 
         // Build semgrep command
         let mut cmd = AsyncCommand::new(&self.semgrep_path);
-        cmd.arg("--config=auto")  // Use Semgrep registry rules
-            .arg("--json")        // JSON output for parsing
-            .arg("--quiet")       // Suppress progress output
+        cmd.arg("--config=auto") // Use Semgrep registry rules
+            .arg("--json") // JSON output for parsing
+            .arg("--quiet") // Suppress progress output
             .arg(directory);
 
         // Execute
-        let output = cmd
-            .output()
-            .await
-            .context("Failed to execute semgrep")?;
+        let output = cmd.output().await.context("Failed to execute semgrep")?;
 
         // Parse output (Semgrep returns 0 even with findings)
         let stdout = String::from_utf8_lossy(&output.stdout);
-        let semgrep_output: SemgrepOutput = serde_json::from_str(&stdout)
-            .context("Failed to parse semgrep JSON output")?;
+        let semgrep_output: SemgrepOutput =
+            serde_json::from_str(&stdout).context("Failed to parse semgrep JSON output")?;
 
-        debug!("Semgrep raw findings: {} results, {} errors",
-            semgrep_output.results.len(), semgrep_output.errors.len());
+        debug!(
+            "Semgrep raw findings: {} results, {} errors",
+            semgrep_output.results.len(),
+            semgrep_output.errors.len()
+        );
 
         // Filter and convert results
         let vulnerabilities = self.convert_results(&semgrep_output)?;
@@ -266,23 +269,18 @@ impl SemgrepEngine {
         }
 
         let mut cmd = AsyncCommand::new(&self.semgrep_path);
-        cmd.arg("--config=auto")
-            .arg("--json")
-            .arg("--quiet");
+        cmd.arg("--config=auto").arg("--json").arg("--quiet");
 
         // Add each file as argument
         for file in files {
             cmd.arg(file);
         }
 
-        let output = cmd
-            .output()
-            .await
-            .context("Failed to execute semgrep")?;
+        let output = cmd.output().await.context("Failed to execute semgrep")?;
 
         let stdout = String::from_utf8_lossy(&output.stdout);
-        let semgrep_output: SemgrepOutput = serde_json::from_str(&stdout)
-            .context("Failed to parse semgrep JSON output")?;
+        let semgrep_output: SemgrepOutput =
+            serde_json::from_str(&stdout).context("Failed to parse semgrep JSON output")?;
 
         let vulnerabilities = self.convert_results(&semgrep_output)?;
 
@@ -424,12 +422,15 @@ impl SemgrepEngine {
             VulnerabilityType::PathTraversal
         } else if id_lower.contains("deserial") {
             VulnerabilityType::UnsafeDeserialization
-        } else if id_lower.contains("secret") || id_lower.contains("hardcoded") || id_lower.contains("api-key") {
+        } else if id_lower.contains("secret")
+            || id_lower.contains("hardcoded")
+            || id_lower.contains("api-key")
+        {
             VulnerabilityType::HardcodedCredentials
         } else if id_lower.contains("crypto") || id_lower.contains("weak-hash") {
             VulnerabilityType::SecretsLeakage
         } else {
-            VulnerabilityType::BehavioralAnomaly  // Generic catch-all
+            VulnerabilityType::BehavioralAnomaly // Generic catch-all
         }
     }
 
@@ -439,7 +440,7 @@ impl SemgrepEngine {
             Some("HIGH") => 0.90,
             Some("MEDIUM") => 0.75,
             Some("LOW") => 0.60,
-            _ => 0.70,  // Default
+            _ => 0.70, // Default
         }
     }
 
@@ -447,10 +448,10 @@ impl SemgrepEngine {
     fn find_semgrep_binary() -> Result<PathBuf> {
         // Try common locations
         let candidates = vec![
-            "semgrep",                    // In PATH
-            "/usr/local/bin/semgrep",     // Homebrew on macOS
-            "/usr/bin/semgrep",           // Linux system install
-            "/opt/homebrew/bin/semgrep",  // Homebrew on Apple Silicon
+            "semgrep",                   // In PATH
+            "/usr/local/bin/semgrep",    // Homebrew on macOS
+            "/usr/bin/semgrep",          // Linux system install
+            "/opt/homebrew/bin/semgrep", // Homebrew on Apple Silicon
         ];
 
         for candidate in candidates {
@@ -560,9 +561,8 @@ mod tests {
     /// Critical/High should block builds, Medium/Low should warn.
     #[test]
     fn test_severity_mapping() {
-        let engine = SemgrepEngine::new().unwrap_or_else(|_| {
-            SemgrepEngine::with_config(RuleFilterConfig::default()).unwrap()
-        });
+        let engine = SemgrepEngine::new()
+            .unwrap_or_else(|_| SemgrepEngine::with_config(RuleFilterConfig::default()).unwrap());
 
         assert_eq!(
             engine.map_severity(&Some(SemgrepSeverity::Error)),
@@ -585,9 +585,8 @@ mod tests {
     /// Proper categorization enables accurate reporting and filtering.
     #[test]
     fn test_vulnerability_type_mapping() {
-        let engine = SemgrepEngine::new().unwrap_or_else(|_| {
-            SemgrepEngine::with_config(RuleFilterConfig::default()).unwrap()
-        });
+        let engine = SemgrepEngine::new()
+            .unwrap_or_else(|_| SemgrepEngine::with_config(RuleFilterConfig::default()).unwrap());
 
         assert_eq!(
             engine.map_vulnerability_type("python.lang.security.injection.sql-injection"),
@@ -624,13 +623,9 @@ mod tests {
         config.min_severity = SemgrepSeverity::Error;
         config.exclude_rules.push("test-rule-1".to_string());
 
-        let engine = SemgrepEngine::with_config(config).unwrap_or_else(|_| {
-            SemgrepEngine::with_config(RuleFilterConfig::default()).unwrap()
-        });
+        let engine = SemgrepEngine::with_config(config)
+            .unwrap_or_else(|_| SemgrepEngine::with_config(RuleFilterConfig::default()).unwrap());
 
-        assert_eq!(
-            engine.filter_config.min_severity,
-            SemgrepSeverity::Error
-        );
+        assert_eq!(engine.filter_config.min_severity, SemgrepSeverity::Error);
     }
 }

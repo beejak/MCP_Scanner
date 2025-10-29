@@ -1,7 +1,7 @@
 //! Pattern matching utilities
 
-use regex::Regex;
 use once_cell::sync::Lazy;
+use regex::Regex;
 
 /// Common dangerous patterns
 pub static COMMAND_INJECTION_PATTERNS: Lazy<Vec<Regex>> = Lazy::new(|| {
@@ -24,7 +24,7 @@ pub static SENSITIVE_FILE_PATTERNS: Lazy<Vec<Regex>> = Lazy::new(|| {
 
 pub static SECRET_PATTERNS: Lazy<Vec<Regex>> = Lazy::new(|| {
     vec![
-        Regex::new(r#"AKIA[A-Z0-9]{16}"#).unwrap(), // AWS keys
+        Regex::new(r#"AKIA[A-Z0-9]{16}"#).unwrap(),   // AWS keys
         Regex::new(r#"sk-[a-zA-Z0-9]{48}"#).unwrap(), // OpenAI keys
         Regex::new(r#"-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----"#).unwrap(),
     ]

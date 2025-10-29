@@ -48,9 +48,9 @@
 use crate::models::ai_finding::AIFinding;
 use crate::providers::{AnalysisContext, LLMProvider, ProviderConfig, ProviderFactory};
 use anyhow::{Context as AnyhowContext, Result};
-use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
-use tokio::sync::{Semaphore, RwLock};
+use std::sync::Arc;
+use tokio::sync::{RwLock, Semaphore};
 use tracing::{debug, error, info, instrument, warn};
 
 /// AI Analysis Engine for orchestrating LLM providers
@@ -110,7 +110,10 @@ impl AIAnalysisEngine {
             .await
             .context("Failed to create any LLM provider")?;
 
-        info!("AI Analysis Engine initialized with provider: {}", provider.name());
+        info!(
+            "AI Analysis Engine initialized with provider: {}",
+            provider.name()
+        );
 
         // Create rate limiter (max_requests concurrent requests)
         let rate_limiter = Arc::new(Semaphore::new(config.max_requests));
@@ -142,25 +145,28 @@ impl AIAnalysisEngine {
     /// - All providers failed
     /// - Rate limit exceeded
     #[instrument(skip(self, code, context), fields(file = %context.file_path, provider = %self.provider.name()))]
-    pub async fn analyze_code(
-        &self,
-        code: &str,
-        context: &AnalysisContext,
-    ) -> Result<AIFinding> {
+    pub async fn analyze_code(&self, code: &str, context: &AnalysisContext) -> Result<AIFinding> {
         // Check budget before analysis
         self.check_budget()?;
 
         // Acquire rate limit permit
-        let _permit = self.rate_limiter.acquire().await.context(
-            "Failed to acquire rate limit permit. Too many concurrent requests."
-        )?;
+        let _permit = self
+            .rate_limiter
+            .acquire()
+            .await
+            .context("Failed to acquire rate limit permit. Too many concurrent requests.")?;
 
         debug!("Analyzing code with AI provider");
 
         // Perform analysis
-        let finding = self.provider.analyze_code(code, context).await.context(
-            format!("AI analysis failed with provider: {}", self.provider.name())
-        )?;
+        let finding = self
+            .provider
+            .analyze_code(code, context)
+            .await
+            .context(format!(
+                "AI analysis failed with provider: {}",
+                self.provider.name()
+            ))?;
 
         // Track cost
         if let Some(cost) = finding.context.cost_usd {
@@ -280,7 +286,8 @@ impl AIAnalysisEngine {
     async fn add_cost(&self, provider: &str, cost: f64) {
         // Update total cost (convert to microdollars for atomic operations)
         let microdollars = (cost * 1_000_000.0) as u64;
-        self.total_cost_microdollars.fetch_add(microdollars, Ordering::SeqCst);
+        self.total_cost_microdollars
+            .fetch_add(microdollars, Ordering::SeqCst);
 
         // Update per-provider cost
         let mut cost_map = self.cost_by_provider.write().await;
@@ -370,8 +377,14 @@ impl CostSummary {
 
         output.push_str(&format!("Total Cost: ${:.4}\n", self.total_cost));
         output.push_str(&format!("Requests: {}\n", self.request_count));
-        output.push_str(&format!("Average: ${:.4}/request\n", self.average_cost_per_request));
-        output.push_str(&format!("Budget: ${:.4} / ${:.4}\n", self.total_cost, self.budget_limit));
+        output.push_str(&format!(
+            "Average: ${:.4}/request\n",
+            self.average_cost_per_request
+        ));
+        output.push_str(&format!(
+            "Budget: ${:.4} / ${:.4}\n",
+            self.total_cost, self.budget_limit
+        ));
         output.push_str(&format!("Remaining: ${:.4}\n", self.budget_remaining));
 
         if !self.cost_by_provider.is_empty() {

@@ -287,8 +287,7 @@ async fn main() -> ExitCode {
 
     tracing_subscriber::registry()
         .with(
-            tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| filter.into()),
+            tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| filter.into()),
         )
         .with(tracing_subscriber::fmt::layer())
         .init();
@@ -381,8 +380,7 @@ async fn main() -> ExitCode {
             pid_file,
             alert_on,
         } => {
-            match cli::monitor::execute(target, interval, watch, daemon, pid_file, alert_on).await
-            {
+            match cli::monitor::execute(target, interval, watch, daemon, pid_file, alert_on).await {
                 Ok(()) => ExitCode::SUCCESS,
                 Err(e) => {
                     eprintln!("❌ Error: {}", e);

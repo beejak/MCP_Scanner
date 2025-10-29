@@ -4,9 +4,9 @@
 //! CVSS scores, and real-world incident information.
 
 use anyhow::{Context, Result};
-use tracing::{debug, warn};
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
+use tracing::{debug, warn};
 
 /// NVD API endpoint
 const NVD_API_BASE: &str = "https://services.nvd.nist.gov/rest/json/cves/2.0";
@@ -148,10 +148,7 @@ impl NvdClient {
         }
 
         // Make request
-        let response = request
-            .send()
-            .await
-            .context("Failed to query NVD API")?;
+        let response = request.send().await.context("Failed to query NVD API")?;
 
         if !response.status().is_success() {
             warn!("NVD API returned error: {}", response.status());
@@ -182,10 +179,7 @@ impl NvdClient {
             request = request.header("apiKey", api_key);
         }
 
-        let response = request
-            .send()
-            .await
-            .context("Failed to query NVD API")?;
+        let response = request.send().await.context("Failed to query NVD API")?;
 
         if !response.status().is_success() {
             return Ok(None);
@@ -229,7 +223,8 @@ impl NvdClient {
             for reference in &cve_item.references {
                 // Check if reference indicates a real-world incident
                 if self.is_incident_reference(&reference.url) {
-                    let description = cve_item.descriptions
+                    let description = cve_item
+                        .descriptions
                         .iter()
                         .find(|d| d.lang == "en")
                         .map(|d| d.value.clone())
@@ -280,7 +275,9 @@ impl NvdClient {
             "securelist.com",
         ];
 
-        incident_indicators.iter().any(|indicator| url.contains(indicator))
+        incident_indicators
+            .iter()
+            .any(|indicator| url.contains(indicator))
     }
 
     /// Check if API is available

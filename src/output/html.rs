@@ -75,7 +75,10 @@ use tracing::{debug, info};
 /// - All data (embedded JSON)
 /// - No external dependencies
 pub fn generate(result: &ScanResult) -> Result<String> {
-    info!("Generating HTML report for {} vulnerabilities", result.vulnerabilities.len());
+    info!(
+        "Generating HTML report for {} vulnerabilities",
+        result.vulnerabilities.len()
+    );
     debug!("Compiling Handlebars template");
     let start = std::time::Instant::now();
 
@@ -602,10 +605,10 @@ mod tests {
     #[test]
     fn test_risk_score_calculation() {
         assert_eq!(calculate_risk_score(0, 0, 0, 0), 0);
-        assert_eq!(calculate_risk_score(1, 0, 0, 0), 10);  // 1 critical
-        assert_eq!(calculate_risk_score(0, 1, 0, 0), 5);   // 1 high
-        assert_eq!(calculate_risk_score(0, 0, 1, 0), 2);   // 1 medium
-        assert_eq!(calculate_risk_score(0, 0, 0, 1), 1);   // 1 low
+        assert_eq!(calculate_risk_score(1, 0, 0, 0), 10); // 1 critical
+        assert_eq!(calculate_risk_score(0, 1, 0, 0), 5); // 1 high
+        assert_eq!(calculate_risk_score(0, 0, 1, 0), 2); // 1 medium
+        assert_eq!(calculate_risk_score(0, 0, 0, 1), 1); // 1 low
         assert_eq!(calculate_risk_score(2, 3, 5, 10), 55); // Mixed
         assert_eq!(calculate_risk_score(20, 0, 0, 0), 100); // Capped at 100
     }

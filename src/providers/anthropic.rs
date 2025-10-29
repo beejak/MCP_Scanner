@@ -58,7 +58,7 @@
 //! # }
 //! ```
 
-use super::{AnalysisContext, LLMProvider, AnthropicSettings};
+use super::{AnalysisContext, AnthropicSettings, LLMProvider};
 use crate::models::{
     ai_finding::*,
     vulnerability::{Severity, Vulnerability},
@@ -278,9 +278,10 @@ impl AnthropicProvider {
             );
         }
 
-        let api_response: AnthropicResponse = response.json().await.context(
-            "Failed to parse Anthropic API response. The API format may have changed."
-        )?;
+        let api_response: AnthropicResponse = response
+            .json()
+            .await
+            .context("Failed to parse Anthropic API response. The API format may have changed.")?;
 
         let content = api_response
             .content
@@ -518,7 +519,8 @@ impl LLMProvider for AnthropicProvider {
     async fn generate_remediation(&self, vuln: &Vulnerability) -> Result<String> {
         info!("Generating remediation guidance with Claude");
 
-        let system_prompt = "You are a security expert. Provide clear, actionable remediation steps \
+        let system_prompt =
+            "You are a security expert. Provide clear, actionable remediation steps \
             with specific code examples. Focus on SECURE alternatives and industry best practices.";
 
         let user_prompt = format!(

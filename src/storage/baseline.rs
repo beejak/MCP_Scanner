@@ -266,12 +266,13 @@ impl BaselineManager {
         };
 
         // Serialize to JSON
-        let json = serde_json::to_string_pretty(&baseline)
-            .context("Failed to serialize baseline")?;
+        let json =
+            serde_json::to_string_pretty(&baseline).context("Failed to serialize baseline")?;
 
         // Compress with gzip
         let mut encoder = GzEncoder::new(Vec::new(), Compression::default());
-        encoder.write_all(json.as_bytes())
+        encoder
+            .write_all(json.as_bytes())
             .context("Failed to compress baseline")?;
         let compressed = encoder.finish().context("Failed to finish compression")?;
 
@@ -326,12 +327,13 @@ impl BaselineManager {
         // Decompress
         let mut decoder = GzDecoder::new(&compressed[..]);
         let mut json = String::new();
-        decoder.read_to_string(&mut json)
+        decoder
+            .read_to_string(&mut json)
             .context("Failed to decompress baseline")?;
 
         // Deserialize
-        let baseline: Baseline = serde_json::from_str(&json)
-            .context("Failed to deserialize baseline")?;
+        let baseline: Baseline =
+            serde_json::from_str(&json).context("Failed to deserialize baseline")?;
 
         debug!(
             "Baseline loaded: {} vulnerabilities from {}",
@@ -399,10 +401,16 @@ impl BaselineManager {
             .collect();
 
         // Create maps for efficient lookup
-        let baseline_map: HashMap<String, &BaselineVulnerability> =
-            baseline.vulnerabilities.iter().map(|v| (v.id.clone(), v)).collect();
-        let current_map: HashMap<String, usize> =
-            current_baseline_vulns.iter().enumerate().map(|(i, v)| (v.id.clone(), i)).collect();
+        let baseline_map: HashMap<String, &BaselineVulnerability> = baseline
+            .vulnerabilities
+            .iter()
+            .map(|v| (v.id.clone(), v))
+            .collect();
+        let current_map: HashMap<String, usize> = current_baseline_vulns
+            .iter()
+            .enumerate()
+            .map(|(i, v)| (v.id.clone(), i))
+            .collect();
 
         // Classify vulnerabilities
         let mut new_vulnerabilities = Vec::new();

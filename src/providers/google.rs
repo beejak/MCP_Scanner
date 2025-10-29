@@ -53,7 +53,7 @@
 //! # }
 //! ```
 
-use super::{AnalysisContext, LLMProvider, GoogleSettings};
+use super::{AnalysisContext, GoogleSettings, LLMProvider};
 use crate::models::{
     ai_finding::*,
     vulnerability::{Severity, Vulnerability},
@@ -262,9 +262,10 @@ impl GoogleProvider {
             );
         }
 
-        let api_response: GeminiResponse = response.json().await.context(
-            "Failed to parse Gemini API response. The API format may have changed.",
-        )?;
+        let api_response: GeminiResponse = response
+            .json()
+            .await
+            .context("Failed to parse Gemini API response. The API format may have changed.")?;
 
         let content = api_response
             .candidates

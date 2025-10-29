@@ -149,10 +149,8 @@ fn scan_server_config(
                             .with_confidence(0.85);
 
                             let mut evidence = HashMap::new();
-                            evidence.insert(
-                                "server_name".to_string(),
-                                serde_json::json!(server_name),
-                            );
+                            evidence
+                                .insert("server_name".to_string(), serde_json::json!(server_name));
                             evidence.insert("path".to_string(), serde_json::json!(path_str));
                             let vuln = vuln.with_evidence(evidence);
 
@@ -246,8 +244,12 @@ fn scan_server_config(
                 ),
             )
             .with_location(Location::new(file_path))
-            .with_impact("Executing commands from untrusted locations may allow arbitrary code execution")
-            .with_remediation("Use absolute paths to trusted executables only (e.g., /usr/local/bin/)")
+            .with_impact(
+                "Executing commands from untrusted locations may allow arbitrary code execution",
+            )
+            .with_remediation(
+                "Use absolute paths to trusted executables only (e.g., /usr/local/bin/)",
+            )
             .with_confidence(0.85);
 
             let mut evidence = HashMap::new();
@@ -276,9 +278,15 @@ fn is_untrusted_domain(url: &str) -> bool {
     // Check for suspicious TLDs or IP addresses
     let suspicious_patterns = [
         // Suspicious TLDs
-        ".tk", ".ml", ".ga", ".cf", ".gq", // Free TLDs often used for malicious purposes
+        ".tk",
+        ".ml",
+        ".ga",
+        ".cf",
+        ".gq", // Free TLDs often used for malicious purposes
         // Raw IP addresses (not localhost)
-        "://192.168.", "://10.", "://172.",
+        "://192.168.",
+        "://10.",
+        "://172.",
     ];
 
     for pattern in &suspicious_patterns {
@@ -295,9 +303,7 @@ fn is_untrusted_domain(url: &str) -> bool {
 
         // Simple IP detection (not localhost)
         if host.chars().filter(|c| *c == '.').count() == 3
-            && host
-                .chars()
-                .all(|c| c.is_numeric() || c == '.')
+            && host.chars().all(|c| c.is_numeric() || c == '.')
             && !is_localhost(url)
         {
             return true;
@@ -310,15 +316,15 @@ fn is_untrusted_domain(url: &str) -> bool {
 /// Check if path is overly permissive
 fn is_overly_permissive_path(path: &str) -> bool {
     let dangerous_paths = [
-        "*",        // Wildcard
-        "/",        // Root
-        "/home",    // All home directories
-        "/Users",   // All user directories (macOS)
-        "C:\\",     // Windows root
-        "C:/",      // Windows root (alt syntax)
-        "/etc",     // System configs
-        "/var",     // System data
-        "/root",    // Root user home
+        "*",      // Wildcard
+        "/",      // Root
+        "/home",  // All home directories
+        "/Users", // All user directories (macOS)
+        "C:\\",   // Windows root
+        "C:/",    // Windows root (alt syntax)
+        "/etc",   // System configs
+        "/var",   // System data
+        "/root",  // Root user home
     ];
 
     for dangerous in &dangerous_paths {
@@ -334,8 +340,16 @@ fn is_overly_permissive_path(path: &str) -> bool {
 fn looks_like_credential(key: &str, value: &str) -> bool {
     let key_lower = key.to_lowercase();
     let credential_keywords = [
-        "key", "token", "password", "secret", "api_key", "apikey",
-        "auth", "credential", "pwd", "pass",
+        "key",
+        "token",
+        "password",
+        "secret",
+        "api_key",
+        "apikey",
+        "auth",
+        "credential",
+        "pwd",
+        "pass",
     ];
 
     // Check if key name suggests it's a credential
@@ -344,9 +358,8 @@ fn looks_like_credential(key: &str, value: &str) -> bool {
         .any(|keyword| key_lower.contains(keyword));
 
     // Check if value looks like a credential (not a reference to env var)
-    let value_not_reference = !value.starts_with('$')
-        && !value.starts_with("${")
-        && value.len() > 8; // Assume credentials are at least 8 chars
+    let value_not_reference =
+        !value.starts_with('$') && !value.starts_with("${") && value.len() > 8; // Assume credentials are at least 8 chars
 
     key_is_credential && value_not_reference
 }
@@ -416,9 +429,7 @@ mod tests {
         "#;
 
         let vulns = detect(config, "config.json").unwrap();
-        assert!(vulns
-            .iter()
-            .all(|v| !v.title.contains("Insecure HTTP")));
+        assert!(vulns.iter().all(|v| !v.title.contains("Insecure HTTP")));
     }
 
     #[test]
@@ -460,9 +471,7 @@ mod tests {
         "#;
 
         let vulns = detect(config, "config.json").unwrap();
-        assert!(vulns
-            .iter()
-            .any(|v| v.title.contains("Overly Permissive")));
+        assert!(vulns.iter().any(|v| v.title.contains("Overly Permissive")));
     }
 
     #[test]
@@ -478,9 +487,7 @@ mod tests {
         "#;
 
         let vulns = detect(config, "config.json").unwrap();
-        assert!(vulns
-            .iter()
-            .any(|v| v.title.contains("Untrusted Location")));
+        assert!(vulns.iter().any(|v| v.title.contains("Untrusted Location")));
     }
 
     #[test]

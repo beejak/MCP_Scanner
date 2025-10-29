@@ -1,6 +1,6 @@
 //! Cohere Provider (Stub - To be implemented)
 
-use super::{AnalysisContext, LLMProvider, CohereSettings};
+use super::{AnalysisContext, CohereSettings, LLMProvider};
 use crate::models::{ai_finding::AIFinding, Vulnerability};
 use anyhow::Result;
 use async_trait::async_trait;

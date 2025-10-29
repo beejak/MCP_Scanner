@@ -90,13 +90,17 @@ impl MitreAttackMapper {
                     id: "T1083".to_string(),
                     name: "File and Directory Discovery".to_string(),
                     tactic: "Discovery".to_string(),
-                    description: "Adversaries enumerate files and directories to find sensitive data.".to_string(),
+                    description:
+                        "Adversaries enumerate files and directories to find sensitive data."
+                            .to_string(),
                 },
                 super::AttackTechnique {
                     id: "T1005".to_string(),
                     name: "Data from Local System".to_string(),
                     tactic: "Collection".to_string(),
-                    description: "Adversaries search local system sources to find files of interest.".to_string(),
+                    description:
+                        "Adversaries search local system sources to find files of interest."
+                            .to_string(),
                 },
             ],
         );
@@ -109,19 +113,25 @@ impl MitreAttackMapper {
                     id: "T1071".to_string(),
                     name: "Application Layer Protocol".to_string(),
                     tactic: "Command and Control".to_string(),
-                    description: "Adversaries abuse application layer protocols to avoid detection.".to_string(),
+                    description:
+                        "Adversaries abuse application layer protocols to avoid detection."
+                            .to_string(),
                 },
                 super::AttackTechnique {
                     id: "T1090".to_string(),
                     name: "Proxy".to_string(),
                     tactic: "Command and Control".to_string(),
-                    description: "Adversaries use compromised servers as proxies to direct traffic.".to_string(),
+                    description:
+                        "Adversaries use compromised servers as proxies to direct traffic."
+                            .to_string(),
                 },
                 super::AttackTechnique {
                     id: "T1595.002".to_string(),
                     name: "Active Scanning: Vulnerability Scanning".to_string(),
                     tactic: "Reconnaissance".to_string(),
-                    description: "Adversaries scan internal networks for vulnerabilities through SSRF.".to_string(),
+                    description:
+                        "Adversaries scan internal networks for vulnerabilities through SSRF."
+                            .to_string(),
                 },
             ],
         );
@@ -134,13 +144,16 @@ impl MitreAttackMapper {
                     id: "T1059.007".to_string(),
                     name: "Command and Scripting Interpreter: JavaScript".to_string(),
                     tactic: "Execution".to_string(),
-                    description: "Adversaries abuse JavaScript for execution on victim systems.".to_string(),
+                    description: "Adversaries abuse JavaScript for execution on victim systems."
+                        .to_string(),
                 },
                 super::AttackTechnique {
                     id: "T1211".to_string(),
                     name: "Exploitation for Defense Evasion".to_string(),
                     tactic: "Defense Evasion".to_string(),
-                    description: "Adversaries exploit software vulnerabilities to bypass security controls.".to_string(),
+                    description:
+                        "Adversaries exploit software vulnerabilities to bypass security controls."
+                            .to_string(),
                 },
             ],
         );
@@ -153,13 +166,15 @@ impl MitreAttackMapper {
                     id: "T1055".to_string(),
                     name: "Process Injection".to_string(),
                     tactic: "Defense Evasion".to_string(),
-                    description: "Adversaries inject code into processes to evade detection.".to_string(),
+                    description: "Adversaries inject code into processes to evade detection."
+                        .to_string(),
                 },
                 super::AttackTechnique {
                     id: "T1059".to_string(),
                     name: "Command and Scripting Interpreter".to_string(),
                     tactic: "Execution".to_string(),
-                    description: "Adversaries abuse interpreters to execute malicious code.".to_string(),
+                    description: "Adversaries abuse interpreters to execute malicious code."
+                        .to_string(),
                 },
             ],
         );
@@ -172,13 +187,16 @@ impl MitreAttackMapper {
                     id: "T1552.001".to_string(),
                     name: "Unsecured Credentials: Credentials In Files".to_string(),
                     tactic: "Credential Access".to_string(),
-                    description: "Adversaries search compromised systems for credentials stored in files.".to_string(),
+                    description:
+                        "Adversaries search compromised systems for credentials stored in files."
+                            .to_string(),
                 },
                 super::AttackTechnique {
                     id: "T1078".to_string(),
                     name: "Valid Accounts".to_string(),
                     tactic: "Persistence".to_string(),
-                    description: "Adversaries obtain and abuse credentials to maintain access.".to_string(),
+                    description: "Adversaries obtain and abuse credentials to maintain access."
+                        .to_string(),
                 },
             ],
         );
@@ -191,13 +209,17 @@ impl MitreAttackMapper {
                     id: "T1190".to_string(),
                     name: "Exploit Public-Facing Application".to_string(),
                     tactic: "Initial Access".to_string(),
-                    description: "Adversaries exploit misconfigurations in public-facing applications.".to_string(),
+                    description:
+                        "Adversaries exploit misconfigurations in public-facing applications."
+                            .to_string(),
                 },
                 super::AttackTechnique {
                     id: "T1548".to_string(),
                     name: "Abuse Elevation Control Mechanism".to_string(),
                     tactic: "Privilege Escalation".to_string(),
-                    description: "Adversaries abuse misconfigurations to gain higher-level permissions.".to_string(),
+                    description:
+                        "Adversaries abuse misconfigurations to gain higher-level permissions."
+                            .to_string(),
                 },
             ],
         );
@@ -206,7 +228,10 @@ impl MitreAttackMapper {
     }
 
     /// Map vulnerability to MITRE ATT&CK techniques
-    pub fn map_vulnerability(&self, vulnerability: &Vulnerability) -> Result<Vec<super::AttackTechnique>> {
+    pub fn map_vulnerability(
+        &self,
+        vulnerability: &Vulnerability,
+    ) -> Result<Vec<super::AttackTechnique>> {
         let techniques = self
             .mappings
             .get(&vulnerability.vuln_type)
@@ -222,7 +247,11 @@ impl MitreAttackMapper {
 
         for technique_list in self.mappings.values() {
             for technique in technique_list {
-                if technique.tactic == tactic && !techniques.iter().any(|t: &super::AttackTechnique| t.id == technique.id) {
+                if technique.tactic == tactic
+                    && !techniques
+                        .iter()
+                        .any(|t: &super::AttackTechnique| t.id == technique.id)
+                {
                     techniques.push(technique.clone());
                 }
             }

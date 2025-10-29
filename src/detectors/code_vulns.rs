@@ -86,54 +86,54 @@ static SENSITIVE_FILE_PATTERNS: Lazy<Vec<SensitiveFilePattern>> = Lazy::new(|| {
         // SSH Keys
         SensitiveFilePattern {
             name: "SSH Private Key Access",
-            regex: Regex::new(r#"['"](~?/?\.ssh/id_(rsa|ed25519|ecdsa|dsa))['""]#).unwrap(),
+            regex: Regex::new(r#"['"](~?/?\.ssh/id_(rsa|ed25519|ecdsa|dsa))['"]"#).unwrap(),
             severity: Severity::Critical,
             description: "Accessing SSH private keys without user permission",
         },
         SensitiveFilePattern {
             name: "SSH Known Hosts Access",
-            regex: Regex::new(r#"['"](~?/?\.ssh/known_hosts)['""]#).unwrap(),
+            regex: Regex::new(r#"['"](~?/?\.ssh/known_hosts)['"]"#).unwrap(),
             severity: Severity::High,
             description: "Accessing SSH known_hosts file",
         },
         // AWS Credentials
         SensitiveFilePattern {
             name: "AWS Credentials Access",
-            regex: Regex::new(r#"['"](~?/?\.aws/credentials)['""]#).unwrap(),
+            regex: Regex::new(r#"['"](~?/?\.aws/credentials)['"]"#).unwrap(),
             severity: Severity::Critical,
             description: "Accessing AWS credentials file",
         },
         SensitiveFilePattern {
             name: "AWS Config Access",
-            regex: Regex::new(r#"['"](~?/?\.aws/config)['""]#).unwrap(),
+            regex: Regex::new(r#"['"](~?/?\.aws/config)['"]"#).unwrap(),
             severity: Severity::High,
             description: "Accessing AWS configuration file",
         },
         // GCP Credentials
         SensitiveFilePattern {
             name: "GCP Credentials Access",
-            regex: Regex::new(r#"['"](~?/?\.config/gcloud/[^'"]*)['""]#).unwrap(),
+            regex: Regex::new(r#"['"](~?/?\.config/gcloud/[^'"]*)['"]"#).unwrap(),
             severity: Severity::Critical,
             description: "Accessing Google Cloud credentials",
         },
         // Environment Files
         SensitiveFilePattern {
             name: ".env File Access",
-            regex: Regex::new(r#"['"]\.env(\.local|\.production)?['""]#).unwrap(),
+            regex: Regex::new(r#"['"]\.env(\.local|\.production)?['"]"#).unwrap(),
             severity: Severity::High,
             description: "Accessing environment variable files that may contain secrets",
         },
         // Shell RC Files (can contain secrets)
         SensitiveFilePattern {
             name: "Shell RC File Access",
-            regex: Regex::new(r#"['"](~?/?\.bashrc|~?/?\.zshrc|~?/?\.profile)['""]#).unwrap(),
+            regex: Regex::new(r#"['"](~?/?\.bashrc|~?/?\.zshrc|~?/?\.profile)['"]"#).unwrap(),
             severity: Severity::Medium,
             description: "Accessing shell configuration files that may contain secrets",
         },
         // Browser Data
         SensitiveFilePattern {
             name: "Browser Cookie Access",
-            regex: Regex::new(r#"['"](.*/(Chrome|Firefox|Safari)/.*[Cc]ookies?.*)['""]#).unwrap(),
+            regex: Regex::new(r#"['"](.*/(Chrome|Firefox|Safari)/.*[Cc]ookies?.*)['"]"#).unwrap(),
             severity: Severity::Critical,
             description: "Accessing browser cookies without user permission",
         },
@@ -182,10 +182,7 @@ pub fn detect_command_injection(content: &str, file_path: &str) -> Result<Vec<Vu
 }
 
 /// Detect sensitive file access
-pub fn detect_sensitive_file_access(
-    content: &str,
-    file_path: &str,
-) -> Result<Vec<Vulnerability>> {
+pub fn detect_sensitive_file_access(content: &str, file_path: &str) -> Result<Vec<Vulnerability>> {
     let mut vulnerabilities = Vec::new();
     let mut id_counter = 1;
 

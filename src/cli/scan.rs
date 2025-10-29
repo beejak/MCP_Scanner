@@ -61,8 +61,10 @@ pub async fn execute(
         SeverityLevel::Critical => crate::models::vulnerability::Severity::Critical,
     };
 
-    debug!("Loaded config: mode={:?}, min_severity={:?}, workers={}",
-           config.mode, config.min_severity, config.parallel_workers);
+    debug!(
+        "Loaded config: mode={:?}, min_severity={:?}, workers={}",
+        config.mode, config.min_severity, config.parallel_workers
+    );
 
     // Parse target path
     let target_path = PathBuf::from(&target);

@@ -185,24 +185,17 @@ impl OllamaProvider {
 
         // Health check - try to connect to Ollama
         let tags_url = format!("{}/api/tags", settings.url);
-        let response = client
-            .get(&tags_url)
-            .send()
-            .await
-            .context(format!(
-                "Failed to connect to Ollama at {}. Is Ollama running?\n\n\
+        let response = client.get(&tags_url).send().await.context(format!(
+            "Failed to connect to Ollama at {}. Is Ollama running?\n\n\
                 To install Ollama:\n\
                   curl -fsSL https://ollama.com/install.sh | sh\n\n\
                 To start Ollama:\n\
                   ollama serve",
-                settings.url
-            ))?;
+            settings.url
+        ))?;
 
         if !response.status().is_success() {
-            anyhow::bail!(
-                "Ollama server returned error status: {}",
-                response.status()
-            );
+            anyhow::bail!("Ollama server returned error status: {}", response.status());
         }
 
         // Parse available models
@@ -211,16 +204,15 @@ impl OllamaProvider {
             .await
             .context("Failed to parse Ollama models list")?;
 
-        let available_models: Vec<String> = tags
-            .models
-            .iter()
-            .map(|m| m.name.clone())
-            .collect();
+        let available_models: Vec<String> = tags.models.iter().map(|m| m.name.clone()).collect();
 
         debug!("Available Ollama models: {:?}", available_models);
 
         // Check if requested model is available
-        if !available_models.iter().any(|m| m.starts_with(&settings.model)) {
+        if !available_models
+            .iter()
+            .any(|m| m.starts_with(&settings.model))
+        {
             warn!(
                 "Model '{}' not found in available models: {:?}",
                 settings.model, available_models
@@ -337,7 +329,10 @@ impl OllamaProvider {
                 VulnerabilityType::CrossOriginEscalation
             }
             _ => {
-                debug!("Unknown vulnerability type '{}', defaulting to CommandInjection", type_str);
+                debug!(
+                    "Unknown vulnerability type '{}', defaulting to CommandInjection",
+                    type_str
+                );
                 VulnerabilityType::CommandInjection
             }
         }
@@ -397,11 +392,7 @@ impl LLMProvider for OllamaProvider {
         language = %context.language,
         code_len = code.len()
     ))]
-    async fn analyze_code(
-        &self,
-        code: &str,
-        context: &AnalysisContext,
-    ) -> Result<AIFinding> {
+    async fn analyze_code(&self, code: &str, context: &AnalysisContext) -> Result<AIFinding> {
         info!("Starting AI code analysis");
 
         // Construct analysis prompt
@@ -463,20 +454,13 @@ If no vulnerability found, set has_vulnerability to false and omit other fields.
         }
 
         // Extract vulnerability details
-        let vuln_type_str = parsed["type"]
-            .as_str()
-            .unwrap_or("command_injection");
-        let severity_str = parsed["severity"]
-            .as_str()
-            .unwrap_or("medium");
+        let vuln_type_str = parsed["type"].as_str().unwrap_or("command_injection");
+        let severity_str = parsed["severity"].as_str().unwrap_or("medium");
 
         Ok(AIFinding {
             vuln_type: Self::parse_vuln_type(vuln_type_str),
             severity: Self::parse_severity(severity_str),
-            confidence: parsed["confidence"]
-                .as_f64()
-                .unwrap_or(0.7)
-                .clamp(0.0, 1.0),
+            confidence: parsed["confidence"].as_f64().unwrap_or(0.7).clamp(0.0, 1.0),
             description: parsed["description"]
                 .as_str()
                 .unwrap_or("Security vulnerability detected")
@@ -500,7 +484,7 @@ If no vulnerability found, set has_vulnerability to false and omit other fields.
                 scope: context.scope.clone(),
                 timestamp: chrono::Utc::now(),
                 duration_ms: duration.as_millis() as u64,
-                tokens_used: None, // Ollama doesn't provide token count
+                tokens_used: None,   // Ollama doesn't provide token count
                 cost_usd: Some(0.0), // Free!
             },
             insights: vec![],
@@ -513,11 +497,7 @@ If no vulnerability found, set has_vulnerability to false and omit other fields.
     }
 
     #[instrument(skip(self, vuln, code))]
-    async fn explain_vulnerability(
-        &self,
-        vuln: &Vulnerability,
-        code: &str,
-    ) -> Result<String> {
+    async fn explain_vulnerability(&self, vuln: &Vulnerability, code: &str) -> Result<String> {
         let prompt = format!(
             r#"Explain this security vulnerability in detail for a developer:
 
@@ -625,7 +605,10 @@ mod tests {
 
     #[test]
     fn test_parse_severity() {
-        assert_eq!(OllamaProvider::parse_severity("critical"), Severity::Critical);
+        assert_eq!(
+            OllamaProvider::parse_severity("critical"),
+            Severity::Critical
+        );
         assert_eq!(OllamaProvider::parse_severity("high"), Severity::High);
         assert_eq!(OllamaProvider::parse_severity("medium"), Severity::Medium);
         assert_eq!(OllamaProvider::parse_severity("low"), Severity::Low);

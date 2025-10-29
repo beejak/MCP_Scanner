@@ -70,7 +70,7 @@ impl CacheEntry {
     fn is_expired(&self) -> bool {
         let now = SystemTime::now()
             .duration_since(UNIX_EPOCH)
-            .unwrap_or(Duration::from_secs(0))  // Graceful fallback if system time is invalid
+            .unwrap_or(Duration::from_secs(0)) // Graceful fallback if system time is invalid
             .as_secs();
 
         now > self.cached_at + self.ttl_seconds
@@ -170,11 +170,15 @@ impl ScanCache {
             }
         };
 
-        let entry: CacheEntry = bincode::deserialize(&entry_bytes)
-            .context("Failed to deserialize cache entry")?;
+        let entry: CacheEntry =
+            bincode::deserialize(&entry_bytes).context("Failed to deserialize cache entry")?;
 
         if entry.is_valid_for(content) {
-            debug!("Cache hit: {} ({} vulnerabilities)", file_path, entry.vulnerabilities.len());
+            debug!(
+                "Cache hit: {} ({} vulnerabilities)",
+                file_path,
+                entry.vulnerabilities.len()
+            );
             Ok(Some(entry.vulnerabilities))
         } else {
             debug!("Cache invalid (content changed or expired): {}", file_path);
@@ -210,19 +214,23 @@ impl ScanCache {
             vulnerabilities: vulnerabilities.to_vec(),
             cached_at: SystemTime::now()
                 .duration_since(UNIX_EPOCH)
-                .unwrap_or(Duration::from_secs(0))  // Graceful fallback
+                .unwrap_or(Duration::from_secs(0)) // Graceful fallback
                 .as_secs(),
             ttl_seconds: ttl.as_secs(),
         };
 
-        let entry_bytes = bincode::serialize(&entry)
-            .context("Failed to serialize cache entry")?;
+        let entry_bytes = bincode::serialize(&entry).context("Failed to serialize cache entry")?;
 
         let key = self.make_key(file_path);
-        self.db.insert(&key, entry_bytes)
+        self.db
+            .insert(&key, entry_bytes)
             .context("Failed to write to cache")?;
 
-        debug!("Cached scan result for: {} (TTL: {}s)", file_path, ttl.as_secs());
+        debug!(
+            "Cached scan result for: {} (TTL: {}s)",
+            file_path,
+            ttl.as_secs()
+        );
 
         // Check if cleanup is needed
         self.maybe_cleanup()?;
@@ -233,7 +241,9 @@ impl ScanCache {
     /// Remove cached result for a file
     pub fn remove(&self, file_path: &str) -> Result<()> {
         let key = self.make_key(file_path);
-        self.db.remove(&key).context("Failed to remove from cache")?;
+        self.db
+            .remove(&key)
+            .context("Failed to remove from cache")?;
         debug!("Removed cache entry: {}", file_path);
         Ok(())
     }
@@ -384,7 +394,10 @@ impl CacheStats {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::models::{vulnerability::{Severity, VulnerabilityLocation}, VulnerabilityType};
+    use crate::models::{
+        vulnerability::{Severity, VulnerabilityLocation},
+        VulnerabilityType,
+    };
 
     #[test]
     fn test_content_hash() {

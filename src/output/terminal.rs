@@ -55,16 +55,10 @@ fn print_header(use_color: bool) {
 
 fn print_scan_info(result: &ScanResult, use_color: bool) {
     if use_color {
-        println!(
-            "📂 Scanning: {}",
-            result.target.clone().with(Color::Cyan)
-        );
+        println!("📂 Scanning: {}", result.target.clone().with(Color::Cyan));
         println!(
             "🔍 Engines: {}",
-            result
-                .engines
-                .join(" | ")
-                .with(Color::Green)
+            result.engines.join(" | ").with(Color::Green)
         );
     } else {
         println!("📂 Scanning: {}", result.target);
@@ -83,15 +77,26 @@ fn print_summary(result: &ScanResult, use_color: bool) {
     let risk_badge = result.severity_badge();
 
     if use_color {
-        println!("Risk Score: {}/100 {}", result.summary.risk_score, risk_badge);
+        println!(
+            "Risk Score: {}/100 {}",
+            result.summary.risk_score, risk_badge
+        );
     } else {
-        println!("Risk Score: {}/100 {}", result.summary.risk_score, risk_badge);
+        println!(
+            "Risk Score: {}/100 {}",
+            result.summary.risk_score, risk_badge
+        );
     }
 
     println!();
 
     // Print counts by severity
-    print_severity_count("CRITICAL", result.summary.critical, Severity::Critical, use_color);
+    print_severity_count(
+        "CRITICAL",
+        result.summary.critical,
+        Severity::Critical,
+        use_color,
+    );
     print_severity_count("HIGH", result.summary.high, Severity::High, use_color);
     print_severity_count("MEDIUM", result.summary.medium, Severity::Medium, use_color);
     print_severity_count("LOW", result.summary.low, Severity::Low, use_color);

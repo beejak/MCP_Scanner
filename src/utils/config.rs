@@ -28,7 +28,10 @@ pub fn load_scan_config(explicit_path: Option<String>) -> Result<ScanConfig> {
     // Try project config
     let project_config = PathBuf::from(PROJECT_CONFIG_NAME);
     if project_config.exists() {
-        debug!("Loading scan config from project config: {}", PROJECT_CONFIG_NAME);
+        debug!(
+            "Loading scan config from project config: {}",
+            PROJECT_CONFIG_NAME
+        );
         match load_scan_config_from_file(PROJECT_CONFIG_NAME) {
             Ok(config) => return Ok(config),
             Err(e) => {
@@ -111,8 +114,7 @@ pub fn save_app_config(config: &AppConfig, explicit_path: Option<String>) -> Res
     let yaml = serde_yaml::to_string(config)
         .with_context(|| "Failed to serialize configuration to YAML")?;
 
-    fs::write(&path, yaml)
-        .with_context(|| format!("Failed to write config file to {:?}", path))?;
+    fs::write(&path, yaml).with_context(|| format!("Failed to write config file to {:?}", path))?;
 
     debug!("Saved app config to: {:?}", path);
     Ok(())
@@ -209,16 +211,12 @@ fn load_app_config_from_file(path: &str) -> Result<AppConfig> {
 pub fn validate_scan_config(config: &ScanConfig) -> Result<()> {
     // Validate max_file_size
     if config.max_file_size == 0 {
-        anyhow::bail!(
-            "Invalid configuration value for 'max_file_size': must be greater than 0"
-        );
+        anyhow::bail!("Invalid configuration value for 'max_file_size': must be greater than 0");
     }
 
     // Validate parallel_workers
     if config.parallel_workers == 0 {
-        anyhow::bail!(
-            "Invalid configuration value for 'parallel_workers': must be at least 1"
-        );
+        anyhow::bail!("Invalid configuration value for 'parallel_workers': must be at least 1");
     }
 
     // Warn about potentially invalid exclude patterns but don't fail

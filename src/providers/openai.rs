@@ -254,8 +254,16 @@ impl OpenAIProvider {
             .clone()
             .unwrap_or_default();
 
-        let input_tokens = response.usage.as_ref().map(|u| u.prompt_tokens as usize).unwrap_or(0);
-        let output_tokens = response.usage.as_ref().map(|u| u.completion_tokens as usize).unwrap_or(0);
+        let input_tokens = response
+            .usage
+            .as_ref()
+            .map(|u| u.prompt_tokens as usize)
+            .unwrap_or(0);
+        let output_tokens = response
+            .usage
+            .as_ref()
+            .map(|u| u.completion_tokens as usize)
+            .unwrap_or(0);
 
         debug!(
             "Received response: {} chars, {} input tokens, {} output tokens",
@@ -300,9 +308,15 @@ impl OpenAIProvider {
     /// Parse vulnerability type from string
     fn parse_vuln_type(type_str: &str) -> VulnerabilityType {
         match type_str.to_lowercase().as_str() {
-            "secrets_leakage" | "secrets" | "hardcoded_secrets" => VulnerabilityType::SecretsLeakage,
-            "command_injection" | "command" | "code_injection" => VulnerabilityType::CommandInjection,
-            "sensitive_file_access" | "file_access" | "path_traversal" => VulnerabilityType::SensitiveFileAccess,
+            "secrets_leakage" | "secrets" | "hardcoded_secrets" => {
+                VulnerabilityType::SecretsLeakage
+            }
+            "command_injection" | "command" | "code_injection" => {
+                VulnerabilityType::CommandInjection
+            }
+            "sensitive_file_access" | "file_access" | "path_traversal" => {
+                VulnerabilityType::SensitiveFileAccess
+            }
             "tool_poisoning" | "supply_chain" => VulnerabilityType::ToolPoisoning,
             "prompt_injection" | "prompt" => VulnerabilityType::PromptInjection,
             _ => VulnerabilityType::SecretsLeakage, // Default fallback
@@ -375,7 +389,8 @@ impl LLMProvider for OpenAIProvider {
         );
 
         let start = std::time::Instant::now();
-        let (response, input_tokens, output_tokens) = self.chat_completion(&system_prompt, &user_prompt).await?;
+        let (response, input_tokens, output_tokens) =
+            self.chat_completion(&system_prompt, &user_prompt).await?;
         let duration_ms = start.elapsed().as_millis() as u64;
 
         // Extract JSON from response
@@ -467,7 +482,12 @@ impl LLMProvider for OpenAIProvider {
             Description: {}\n\n\
             Code:\n```\n{}\n```\n\n\
             Provide a clear explanation for a developer.",
-            vuln.vuln_type, vuln.severity, vuln.location.file, vuln.location.line, vuln.description, code
+            vuln.vuln_type,
+            vuln.severity,
+            vuln.location.file,
+            vuln.location.line,
+            vuln.description,
+            code
         );
 
         let (response, _, _) = self.chat_completion(&system_prompt, &user_prompt).await?;
@@ -487,7 +507,8 @@ impl LLMProvider for OpenAIProvider {
     async fn generate_remediation(&self, vuln: &Vulnerability) -> Result<String> {
         info!("Generating remediation guidance");
 
-        let system_prompt = "You are a security expert. Provide clear, actionable remediation steps \
+        let system_prompt =
+            "You are a security expert. Provide clear, actionable remediation steps \
             with code examples. Focus on SECURE alternatives and best practices.";
 
         let user_prompt = format!(
@@ -583,7 +604,7 @@ mod tests {
         assert!(result.is_some());
 
         // JSON embedded in text
-        let json = "Some text before {"test": "value"} some text after";
+        let json = r#"Some text before {"test": "value"} some text after"#;
         let result = OpenAIProvider::extract_json(json);
         assert!(result.is_some());
     }
