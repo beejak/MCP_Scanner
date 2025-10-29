@@ -179,11 +179,11 @@ async fn test_baseline_comparison_workflow() -> Result<()> {
             description: "SQL injection in login".to_string(),
             severity: Severity::Critical,
             vuln_type: VulnerabilityType::CodeInjection,
-            location: Location {
+            location: Some(Location {
                 file: "src/auth.py".to_string(),
                 line: Some(10),
                 column: Some(5),
-            },
+            }),
             code_snippet: Some("query = \"SELECT * FROM users WHERE id = \" + user_id".to_string()),
             impact: Some("Data breach".to_string()),
             remediation: Some("Use parameterized queries".to_string()),
@@ -191,6 +191,9 @@ async fn test_baseline_comparison_workflow() -> Result<()> {
             cwe_id: Some(89),
             owasp: Some("A03:2021".to_string()),
             references: vec![],
+            example_fix: None,
+            evidence: None,
+            ai_analysis: None,
         },
         Vulnerability {
             id: "VULN-002".to_string(),
@@ -198,11 +201,11 @@ async fn test_baseline_comparison_workflow() -> Result<()> {
             description: "API key in source".to_string(),
             severity: Severity::High,
             vuln_type: VulnerabilityType::HardcodedSecret,
-            location: Location {
+            location: Some(Location {
                 file: "src/config.py".to_string(),
                 line: Some(5),
                 column: None,
-            },
+            }),
             code_snippet: Some("API_KEY = 'sk-1234'".to_string()),
             impact: Some("Credential exposure".to_string()),
             remediation: Some("Use environment variables".to_string()),
@@ -210,6 +213,9 @@ async fn test_baseline_comparison_workflow() -> Result<()> {
             cwe_id: Some(798),
             owasp: None,
             references: vec![],
+            example_fix: None,
+            evidence: None,
+            ai_analysis: None,
         },
         Vulnerability {
             id: "VULN-003".to_string(),
@@ -217,11 +223,11 @@ async fn test_baseline_comparison_workflow() -> Result<()> {
             description: "Shell command with user input".to_string(),
             severity: Severity::Critical,
             vuln_type: VulnerabilityType::CommandInjection,
-            location: Location {
+            location: Some(Location {
                 file: "src/backup.py".to_string(),
                 line: Some(20),
                 column: Some(10),
-            },
+            }),
             code_snippet: Some("os.system(f'tar -czf {filename}')".to_string()),
             impact: Some("Remote code execution".to_string()),
             remediation: Some("Use subprocess with argument list".to_string()),
@@ -229,6 +235,9 @@ async fn test_baseline_comparison_workflow() -> Result<()> {
             cwe_id: Some(78),
             owasp: Some("A03:2021".to_string()),
             references: vec![],
+            example_fix: None,
+            evidence: None,
+            ai_analysis: None,
         },
     ];
 
@@ -253,11 +262,11 @@ async fn test_baseline_comparison_workflow() -> Result<()> {
             description: "API key in source".to_string(),
             severity: Severity::Critical, // CHANGED: Was High, now Critical
             vuln_type: VulnerabilityType::HardcodedSecret,
-            location: Location {
+            location: Some(Location {
                 file: "src/config.py".to_string(),
                 line: Some(5),
                 column: None,
-            },
+            }),
             code_snippet: Some("API_KEY = 'sk-1234'".to_string()),
             impact: Some("Credential exposure".to_string()),
             remediation: Some("Use environment variables".to_string()),
@@ -265,6 +274,9 @@ async fn test_baseline_comparison_workflow() -> Result<()> {
             cwe_id: Some(798),
             owasp: None,
             references: vec![],
+            example_fix: None,
+            evidence: None,
+            ai_analysis: None,
         },
         Vulnerability {
             id: "VULN-003".to_string(),
@@ -272,11 +284,11 @@ async fn test_baseline_comparison_workflow() -> Result<()> {
             description: "Shell command with user input".to_string(),
             severity: Severity::Critical,
             vuln_type: VulnerabilityType::CommandInjection,
-            location: Location {
+            location: Some(Location {
                 file: "src/backup.py".to_string(),
                 line: Some(20),
                 column: Some(10),
-            },
+            }),
             code_snippet: Some("os.system(f'tar -czf {filename}')".to_string()),
             impact: Some("Remote code execution".to_string()),
             remediation: Some("Use subprocess with argument list".to_string()),
@@ -284,6 +296,9 @@ async fn test_baseline_comparison_workflow() -> Result<()> {
             cwe_id: Some(78),
             owasp: Some("A03:2021".to_string()),
             references: vec![],
+            example_fix: None,
+            evidence: None,
+            ai_analysis: None,
         },
         Vulnerability {
             id: "VULN-004".to_string(), // NEW vulnerability
@@ -291,11 +306,11 @@ async fn test_baseline_comparison_workflow() -> Result<()> {
             description: "Unsanitized file path".to_string(),
             severity: Severity::High,
             vuln_type: VulnerabilityType::PathTraversal,
-            location: Location {
+            location: Some(Location {
                 file: "src/files.py".to_string(),
                 line: Some(15),
                 column: Some(8),
-            },
+            }),
             code_snippet: Some("open(user_path, 'r')".to_string()),
             impact: Some("Arbitrary file read".to_string()),
             remediation: Some("Validate and sanitize paths".to_string()),
@@ -303,6 +318,9 @@ async fn test_baseline_comparison_workflow() -> Result<()> {
             cwe_id: Some(22),
             owasp: Some("A01:2021".to_string()),
             references: vec![],
+            example_fix: None,
+            evidence: None,
+            ai_analysis: None,
         },
     ];
 
@@ -389,11 +407,11 @@ async fn test_suppression_engine_workflow() -> Result<()> {
             description: "Test".to_string(),
             severity: Severity::Critical,
             vuln_type: VulnerabilityType::CodeInjection,
-            location: Location {
+            location: Some(Location {
                 file: "src/auth.py".to_string(),
                 line: Some(10),
                 column: Some(5),
-            },
+            }),
             code_snippet: None,
             impact: None,
             remediation: None,
@@ -401,6 +419,9 @@ async fn test_suppression_engine_workflow() -> Result<()> {
             cwe_id: Some(89),
             owasp: None,
             references: vec![],
+            example_fix: None,
+            evidence: None,
+            ai_analysis: None,
         },
         Vulnerability {
             id: "VULN-002".to_string(),
@@ -408,11 +429,11 @@ async fn test_suppression_engine_workflow() -> Result<()> {
             description: "Test".to_string(),
             severity: Severity::High,
             vuln_type: VulnerabilityType::HardcodedSecret,
-            location: Location {
+            location: Some(Location {
                 file: "src/config.py".to_string(),
                 line: Some(5),
                 column: None,
-            },
+            }),
             code_snippet: None,
             impact: None,
             remediation: None,
@@ -420,6 +441,9 @@ async fn test_suppression_engine_workflow() -> Result<()> {
             cwe_id: Some(798),
             owasp: None,
             references: vec![],
+            example_fix: None,
+            evidence: None,
+            ai_analysis: None,
         },
         Vulnerability {
             id: "VULN-003".to_string(),
@@ -427,11 +451,11 @@ async fn test_suppression_engine_workflow() -> Result<()> {
             description: "Test".to_string(),
             severity: Severity::Critical,
             vuln_type: VulnerabilityType::CommandInjection,
-            location: Location {
+            location: Some(Location {
                 file: "src/test/test_backup.py".to_string(),
                 line: Some(20),
                 column: Some(10),
-            },
+            }),
             code_snippet: None,
             impact: None,
             remediation: None,
@@ -439,6 +463,9 @@ async fn test_suppression_engine_workflow() -> Result<()> {
             cwe_id: Some(78),
             owasp: None,
             references: vec![],
+            example_fix: None,
+            evidence: None,
+            ai_analysis: None,
         },
     ];
 
@@ -507,11 +534,11 @@ async fn test_json_output_format() -> Result<()> {
                 description: "Test description".to_string(),
                 severity: Severity::High,
                 vuln_type: VulnerabilityType::CodeInjection,
-                location: Location {
+                location: Some(Location {
                     file: "src/test.py".to_string(),
                     line: Some(10),
                     column: Some(5),
-                },
+                }),
                 code_snippet: Some("dangerous_code()".to_string()),
                 impact: Some("High impact".to_string()),
                 remediation: Some("Fix it".to_string()),
@@ -519,6 +546,9 @@ async fn test_json_output_format() -> Result<()> {
                 cwe_id: Some(89),
                 owasp: Some("A03:2021".to_string()),
                 references: vec!["https://example.com".to_string()],
+                example_fix: None,
+                evidence: None,
+                ai_analysis: None,
             },
         ],
         scan_time_ms: 1500,
@@ -575,11 +605,11 @@ async fn test_sarif_output_format() -> Result<()> {
                 description: "Unsafe SQL query construction".to_string(),
                 severity: Severity::Critical,
                 vuln_type: VulnerabilityType::CodeInjection,
-                location: Location {
+                location: Some(Location {
                     file: "src/database.py".to_string(),
                     line: Some(42),
                     column: Some(12),
-                },
+                }),
                 code_snippet: Some("query = \"SELECT * FROM users WHERE id = \" + user_id".to_string()),
                 impact: Some("Arbitrary database access".to_string()),
                 remediation: Some("Use parameterized queries".to_string()),
@@ -587,6 +617,9 @@ async fn test_sarif_output_format() -> Result<()> {
                 cwe_id: Some(89),
                 owasp: Some("A03:2021 – Injection".to_string()),
                 references: vec!["https://cwe.mitre.org/data/definitions/89.html".to_string()],
+                example_fix: None,
+                evidence: None,
+                ai_analysis: None,
             },
         ],
         scan_time_ms: 2000,
