@@ -15,7 +15,7 @@ use serde::{Deserialize, Serialize};
 use tracing::{debug, info, warn};
 
 /// Threat intelligence enrichment data
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ThreatIntelligence {
     /// MITRE ATT&CK techniques
     pub attack_techniques: Vec<AttackTechnique>,
@@ -34,7 +34,7 @@ pub struct ThreatIntelligence {
 }
 
 /// MITRE ATT&CK technique
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct AttackTechnique {
     /// Technique ID (e.g., T1059.001)
     pub id: String,
@@ -50,7 +50,7 @@ pub struct AttackTechnique {
 }
 
 /// Exploit information
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ExploitInfo {
     /// Exploit name/title
     pub name: String,
@@ -66,7 +66,7 @@ pub struct ExploitInfo {
 }
 
 /// Security incident information
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct IncidentInfo {
     /// Incident date
     pub date: String,
