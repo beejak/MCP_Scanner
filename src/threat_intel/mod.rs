@@ -5,9 +5,9 @@
 //! - MITRE ATT&CK: Adversary tactics and techniques mapping
 //! - NVD: National Vulnerability Database for CVE enrichment
 
-pub mod vulnerable_mcp;
 pub mod mitre_attack;
 pub mod nvd;
+pub mod vulnerable_mcp;
 
 use crate::models::vulnerability::Vulnerability;
 use anyhow::Result;
@@ -15,7 +15,7 @@ use serde::{Deserialize, Serialize};
 use tracing::{debug, info, warn};
 
 /// Threat intelligence enrichment data
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ThreatIntelligence {
     /// MITRE ATT&CK techniques
     pub attack_techniques: Vec<AttackTechnique>,
@@ -34,7 +34,7 @@ pub struct ThreatIntelligence {
 }
 
 /// MITRE ATT&CK technique
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct AttackTechnique {
     /// Technique ID (e.g., T1059.001)
     pub id: String,
@@ -50,7 +50,7 @@ pub struct AttackTechnique {
 }
 
 /// Exploit information
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ExploitInfo {
     /// Exploit name/title
     pub name: String,
@@ -66,7 +66,7 @@ pub struct ExploitInfo {
 }
 
 /// Security incident information
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct IncidentInfo {
     /// Incident date
     pub date: String,
@@ -102,7 +102,10 @@ impl ThreatIntelService {
 
     /// Enrich vulnerability with threat intelligence
     pub async fn enrich(&self, vulnerability: &Vulnerability) -> Result<ThreatIntelligence> {
-        debug!("Enriching vulnerability {} with threat intelligence", vulnerability.id);
+        debug!(
+            "Enriching vulnerability {} with threat intelligence",
+            vulnerability.id
+        );
 
         let mut intel = ThreatIntelligence {
             attack_techniques: vec![],
@@ -115,7 +118,11 @@ impl ThreatIntelService {
         // Get MITRE ATT&CK mapping
         match self.mitre.map_vulnerability(vulnerability) {
             Ok(techniques) => {
-                debug!("Mapped {} MITRE ATT&CK techniques for {}", techniques.len(), vulnerability.id);
+                debug!(
+                    "Mapped {} MITRE ATT&CK techniques for {}",
+                    techniques.len(),
+                    vulnerability.id
+                );
                 intel.attack_techniques = techniques;
             }
             Err(e) => {
@@ -126,7 +133,11 @@ impl ThreatIntelService {
         // Check VulnerableMCP database
         match self.vulnerable_mcp.check_vulnerability(vulnerability).await {
             Ok(mcp_intel) => {
-                debug!("VulnerableMCP found {} CVEs for {}", mcp_intel.cves.len(), vulnerability.id);
+                debug!(
+                    "VulnerableMCP found {} CVEs for {}",
+                    mcp_intel.cves.len(),
+                    vulnerability.id
+                );
                 intel.cves.extend(mcp_intel.cves);
                 intel.exploits.extend(mcp_intel.exploits);
                 intel.threat_actors.extend(mcp_intel.threat_actors);
@@ -162,8 +173,14 @@ impl ThreatIntelService {
     }
 
     /// Batch enrich multiple vulnerabilities
-    pub async fn enrich_batch(&self, vulnerabilities: &[Vulnerability]) -> Result<Vec<ThreatIntelligence>> {
-        info!("Batch enriching {} vulnerabilities with threat intelligence", vulnerabilities.len());
+    pub async fn enrich_batch(
+        &self,
+        vulnerabilities: &[Vulnerability],
+    ) -> Result<Vec<ThreatIntelligence>> {
+        info!(
+            "Batch enriching {} vulnerabilities with threat intelligence",
+            vulnerabilities.len()
+        );
 
         let mut results = Vec::new();
         let mut enriched_count = 0;
@@ -190,7 +207,10 @@ impl ThreatIntelService {
             }
         }
 
-        info!("Batch enrichment complete: {} succeeded, {} failed", enriched_count, failed_count);
+        info!(
+            "Batch enrichment complete: {} succeeded, {} failed",
+            enriched_count, failed_count
+        );
 
         Ok(results)
     }

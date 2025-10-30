@@ -1,6 +1,6 @@
 //! Azure OpenAI Provider (Stub - To be implemented)
 
-use super::{AnalysisContext, LLMProvider, AzureSettings};
+use super::{AnalysisContext, AzureSettings, LLMProvider};
 use crate::models::{ai_finding::AIFinding, Vulnerability};
 use anyhow::Result;
 use async_trait::async_trait;

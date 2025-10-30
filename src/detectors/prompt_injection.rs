@@ -1,8 +1,8 @@
 //! Prompt injection detection
 
 use anyhow::Result;
-use regex::Regex;
 use once_cell::sync::Lazy;
+use regex::Regex;
 
 use crate::models::vulnerability::{Location, Severity, Vulnerability, VulnerabilityType};
 

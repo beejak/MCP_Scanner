@@ -334,13 +334,7 @@ fn detect_hidden_instructions(
 
         // Check if hidden text contains suspicious keywords
         let suspicious_keywords = [
-            "system",
-            "ignore",
-            "override",
-            "secret",
-            "hidden",
-            "internal",
-            "bypass",
+            "system", "ignore", "override", "secret", "hidden", "internal", "bypass",
         ];
 
         if suspicious_keywords
@@ -500,7 +494,8 @@ fn analyze_text_tools(content: &str, file_path: &str) -> Result<Vec<Vulnerabilit
     let mut vulnerabilities = Vec::new();
 
     // Simple regex-based extraction (full TS parsing would be more robust)
-    let tool_pattern = Regex::new(r#"(?s)name:\s*['"]([\w_]+)['"],?\s*description:\s*['"](.*?)['"]"#)?;
+    let tool_pattern =
+        Regex::new(r#"(?s)name:\s*['"]([\w_]+)['"],?\s*description:\s*['"](.*?)['"]"#)?;
 
     for (idx, captures) in tool_pattern.captures_iter(content).enumerate() {
         if let (Some(name), Some(desc)) = (captures.get(1), captures.get(2)) {
@@ -512,8 +507,7 @@ fn analyze_text_tools(content: &str, file_path: &str) -> Result<Vec<Vulnerabilit
                 vulnerabilities.push(vuln);
             }
 
-            if let Some(vuln) = detect_misleading_description(name_str, desc_str, file_path, idx)
-            {
+            if let Some(vuln) = detect_misleading_description(name_str, desc_str, file_path, idx) {
                 vulnerabilities.push(vuln);
             }
 

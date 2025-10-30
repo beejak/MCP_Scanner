@@ -187,6 +187,11 @@ fn vuln_type_to_rule_id(vuln_type: &VulnerabilityType) -> String {
         VulnerabilityType::CrossOriginEscalation => "cross_origin_escalation",
         VulnerabilityType::BehavioralAnomaly => "behavioral_anomaly",
         VulnerabilityType::SupplyChainAttack => "supply_chain_attack",
+        VulnerabilityType::XssVulnerability => "xss_vulnerability",
+        VulnerabilityType::PrototypePollution => "prototype_pollution",
+        VulnerabilityType::InsecureConfiguration => "insecure_configuration",
+        VulnerabilityType::CodeInjection => "code_injection",
+        VulnerabilityType::HardcodedSecret => "hardcoded_secret",
     }
     .to_string()
 }
@@ -196,7 +201,7 @@ fn severity_to_sarif_level(severity: &Severity) -> String {
     match severity {
         Severity::Critical | Severity::High => "error",
         Severity::Medium => "warning",
-        Severity::Low => "note",
+        Severity::Low | Severity::Info => "note",
     }
     .to_string()
 }
@@ -271,6 +276,26 @@ fn get_rule_descriptions(vuln_type: &VulnerabilityType) -> (&'static str, &'stat
         VulnerabilityType::SupplyChainAttack => (
             "Detects supply chain attack vectors",
             "Identifies potential supply chain vulnerabilities in dependencies or external resources."
+        ),
+        VulnerabilityType::XssVulnerability => (
+            "Detects cross-site scripting (XSS) vulnerabilities",
+            "XSS vulnerabilities allow attackers to inject malicious scripts into web applications that execute in users' browsers."
+        ),
+        VulnerabilityType::PrototypePollution => (
+            "Detects prototype pollution vulnerabilities",
+            "Prototype pollution occurs when JavaScript object prototypes are modified, potentially leading to security vulnerabilities."
+        ),
+        VulnerabilityType::InsecureConfiguration => (
+            "Detects insecure configuration",
+            "Identifies misconfigurations that weaken security, such as debug mode in production or weak encryption settings."
+        ),
+        VulnerabilityType::CodeInjection => (
+            "Detects code injection vulnerabilities",
+            "Code injection allows attackers to execute arbitrary code by manipulating input that is evaluated or executed."
+        ),
+        VulnerabilityType::HardcodedSecret => (
+            "Detects hardcoded secrets",
+            "Identifies API keys, passwords, tokens, and other secrets hardcoded directly in source code."
         ),
     }
 }

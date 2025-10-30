@@ -67,7 +67,10 @@ impl Suppression {
         }
 
         if self.patterns.is_empty() {
-            anyhow::bail!("Suppression must have at least one pattern (ID: {})", self.id);
+            anyhow::bail!(
+                "Suppression must have at least one pattern (ID: {})",
+                self.id
+            );
         }
 
         // Validate expiration date format
@@ -125,10 +128,9 @@ pub fn load_suppression_config<P: AsRef<Path>>(path: P) -> Result<SuppressionCon
 
     // Validate all suppressions
     for suppression in &config.suppressions {
-        suppression.validate().context(format!(
-            "Invalid suppression in config: {}",
-            path.display()
-        ))?;
+        suppression
+            .validate()
+            .context(format!("Invalid suppression in config: {}", path.display()))?;
     }
 
     debug!(
@@ -141,10 +143,7 @@ pub fn load_suppression_config<P: AsRef<Path>>(path: P) -> Result<SuppressionCon
 }
 
 /// Save suppression configuration to file
-pub fn save_suppression_config<P: AsRef<Path>>(
-    config: &SuppressionConfig,
-    path: P,
-) -> Result<()> {
+pub fn save_suppression_config<P: AsRef<Path>>(config: &SuppressionConfig, path: P) -> Result<()> {
     let yaml = serde_yaml::to_string(config).context("Failed to serialize suppression config")?;
 
     fs::write(path.as_ref(), yaml).context(format!(

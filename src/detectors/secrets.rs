@@ -149,14 +149,8 @@ pub fn detect(content: &str, file_path: &str) -> Result<Vec<Vulnerability>> {
 
                 // Add evidence
                 let mut evidence = HashMap::new();
-                evidence.insert(
-                    "secret_type".to_string(),
-                    serde_json::json!(pattern.name),
-                );
-                evidence.insert(
-                    "redacted_value".to_string(),
-                    serde_json::json!(redacted),
-                );
+                evidence.insert("secret_type".to_string(), serde_json::json!(pattern.name));
+                evidence.insert("redacted_value".to_string(), serde_json::json!(redacted));
                 let vuln = vuln.with_evidence(evidence);
 
                 vulnerabilities.push(vuln);
@@ -228,4 +222,3 @@ mod tests {
         assert_eq!(redact_secret("verylongsecretkey12345678"), "very...5678");
     }
 }
-

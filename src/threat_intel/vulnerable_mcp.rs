@@ -5,9 +5,9 @@
 
 use crate::models::vulnerability::{Vulnerability, VulnerabilityType};
 use anyhow::{Context, Result};
-use tracing::{debug, warn};
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
+use tracing::{debug, warn};
 
 /// VulnerableMCP API endpoint
 const VULNERABLE_MCP_API: &str = "https://api.vulnerablemcp.com/v1";
@@ -84,8 +84,14 @@ impl VulnerableMcpClient {
     }
 
     /// Check vulnerability against VulnerableMCP database
-    pub async fn check_vulnerability(&self, vulnerability: &Vulnerability) -> Result<VulnerableMcpIntel> {
-        debug!("Checking VulnerableMCP for vulnerability: {}", vulnerability.id);
+    pub async fn check_vulnerability(
+        &self,
+        vulnerability: &Vulnerability,
+    ) -> Result<VulnerableMcpIntel> {
+        debug!(
+            "Checking VulnerableMCP for vulnerability: {}",
+            vulnerability.id
+        );
 
         // Build query parameters based on vulnerability type
         let query = self.build_query(vulnerability);
@@ -101,17 +107,32 @@ impl VulnerableMcpClient {
     fn build_query(&self, vulnerability: &Vulnerability) -> String {
         let vuln_type = match vulnerability.vuln_type {
             VulnerabilityType::CommandInjection => "command_injection",
-            VulnerabilityType::SQLInjection => "sql_injection",
-            VulnerabilityType::XSS => "xss",
+            VulnerabilityType::SqlInjection => "sql_injection",
+            VulnerabilityType::XssVulnerability => "xss",
             VulnerabilityType::PathTraversal => "path_traversal",
-            VulnerabilityType::SSRF => "ssrf",
             VulnerabilityType::PrototypePollution => "prototype_pollution",
             VulnerabilityType::CodeInjection => "code_injection",
-            _ => "generic",
+            VulnerabilityType::ToolPoisoning => "tool_poisoning",
+            VulnerabilityType::PromptInjection => "prompt_injection",
+            VulnerabilityType::SensitiveFileAccess => "sensitive_file_access",
+            VulnerabilityType::DataExfiltration => "data_exfiltration",
+            VulnerabilityType::ToxicFlow => "toxic_flow",
+            VulnerabilityType::RugPull => "rug_pull",
+            VulnerabilityType::ShadowTool => "shadow_tool",
+            VulnerabilityType::UnsafeDeserialization => "unsafe_deserialization",
+            VulnerabilityType::HardcodedCredentials => "hardcoded_credentials",
+            VulnerabilityType::SecretsLeakage => "secrets_leakage",
+            VulnerabilityType::PiiExposure => "pii_exposure",
+            VulnerabilityType::CrossOriginEscalation => "cross_origin_escalation",
+            VulnerabilityType::BehavioralAnomaly => "behavioral_anomaly",
+            VulnerabilityType::SupplyChainAttack => "supply_chain_attack",
+            VulnerabilityType::InsecureConfiguration => "insecure_configuration",
+            VulnerabilityType::HardcodedSecret => "hardcoded_secret",
         };
 
         // Include CWE if available
-        let cwe_param = vulnerability.cwe_id
+        let cwe_param = vulnerability
+            .cwe_id
             .map(|cwe| format!("&cwe={}", cwe))
             .unwrap_or_default();
 
@@ -182,9 +203,10 @@ impl VulnerableMcpClient {
             if let Some(cvss) = vuln.cvss_score {
                 // Use highest CVSS score
                 intel.cvss_score = Some(
-                    intel.cvss_score
+                    intel
+                        .cvss_score
                         .map(|existing| existing.max(cvss))
-                        .unwrap_or(cvss)
+                        .unwrap_or(cvss),
                 );
             }
 
@@ -264,7 +286,7 @@ mod tests {
 
         let mut vuln = Vulnerability::new(
             "TEST-002",
-            VulnerabilityType::SQLInjection,
+            VulnerabilityType::SqlInjection,
             Severity::Critical,
             "SQL Injection",
             "Test SQL injection",

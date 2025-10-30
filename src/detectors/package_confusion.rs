@@ -14,13 +14,16 @@ use tracing::{debug, info};
 
 /// Detect package confusion and malicious install scripts in package.json
 pub fn detect(content: &str, file_path: &str) -> Result<Vec<Vulnerability>> {
-    debug!("Scanning {} for package confusion and supply chain attacks", file_path);
+    debug!(
+        "Scanning {} for package confusion and supply chain attacks",
+        file_path
+    );
 
     let mut vulnerabilities = Vec::new();
 
     // Parse JSON
-    let package_json: Value = serde_json::from_str(content)
-        .context("Failed to parse package.json")?;
+    let package_json: Value =
+        serde_json::from_str(content).context("Failed to parse package.json")?;
 
     // Check scripts section for malicious patterns
     if let Some(scripts) = package_json.get("scripts").and_then(|s| s.as_object()) {
@@ -32,7 +35,10 @@ pub fn detect(content: &str, file_path: &str) -> Result<Vec<Vulnerability>> {
         vulnerabilities.extend(detect_suspicious_dependencies(deps, file_path)?);
     }
 
-    if let Some(dev_deps) = package_json.get("devDependencies").and_then(|d| d.as_object()) {
+    if let Some(dev_deps) = package_json
+        .get("devDependencies")
+        .and_then(|d| d.as_object())
+    {
         vulnerabilities.extend(detect_suspicious_dependencies(dev_deps, file_path)?);
     }
 
@@ -44,7 +50,11 @@ pub fn detect(content: &str, file_path: &str) -> Result<Vec<Vulnerability>> {
     }
 
     if !vulnerabilities.is_empty() {
-        info!("Found {} supply chain vulnerabilities in {}", vulnerabilities.len(), file_path);
+        info!(
+            "Found {} supply chain vulnerabilities in {}",
+            vulnerabilities.len(),
+            file_path
+        );
     }
 
     Ok(vulnerabilities)
@@ -84,8 +94,11 @@ fn detect_malicious_scripts(
         // Check for malicious patterns
         for (pattern, description) in &malicious_patterns {
             if script_content.contains(pattern) {
-                let severity = if is_dangerous_hook &&
-                    (pattern.contains("curl") || pattern.contains("wget") || pattern.contains("bash")) {
+                let severity = if is_dangerous_hook
+                    && (pattern.contains("curl")
+                        || pattern.contains("wget")
+                        || pattern.contains("bash"))
+                {
                     Severity::Critical
                 } else if is_dangerous_hook {
                     Severity::High
@@ -150,8 +163,8 @@ fn detect_suspicious_dependencies(
         if version_str.starts_with("git://")
             || version_str.starts_with("git+ssh://")
             || version_str.starts_with("git+https://")
-            || version_str.contains("github.com") && version_str.contains(".git") {
-
+            || version_str.contains("github.com") && version_str.contains(".git")
+        {
             vulnerabilities.push(Vulnerability {
                 id: format!("PKG-GIT-DEP-{}", dep_name.to_uppercase()),
                 title: "Git URL Dependency".to_string(),
@@ -210,8 +223,7 @@ fn detect_suspicious_dependencies(
                         .to_string(),
                 ),
                 remediation: Some(
-                    "Use HTTPS URLs or preferably install from the npm registry."
-                        .to_string(),
+                    "Use HTTPS URLs or preferably install from the npm registry.".to_string(),
                 ),
                 confidence: 0.95,
                 cwe_id: Some(829),
@@ -333,7 +345,10 @@ mod tests {
         }"#;
 
         let result = detect(package_json, "package.json").unwrap();
-        assert!(!result.is_empty(), "Should detect malicious preinstall script");
+        assert!(
+            !result.is_empty(),
+            "Should detect malicious preinstall script"
+        );
 
         let has_curl = result.iter().any(|v| v.description.contains("curl"));
         let has_bash = result.iter().any(|v| v.description.contains("bash"));
@@ -368,9 +383,9 @@ mod tests {
         let result = detect(package_json, "package.json").unwrap();
         assert!(!result.is_empty(), "Should detect HTTP dependency");
 
-        let has_http = result.iter().any(|v| {
-            v.title.contains("HTTP") && v.severity == Severity::High
-        });
+        let has_http = result
+            .iter()
+            .any(|v| v.title.contains("HTTP") && v.severity == Severity::High);
         assert!(has_http, "Should flag HTTP dependency as High severity");
     }
 
@@ -406,6 +421,9 @@ mod tests {
         }"#;
 
         let result = detect(package_json, "package.json").unwrap();
-        assert!(result.is_empty(), "Clean package.json should have no vulnerabilities");
+        assert!(
+            result.is_empty(),
+            "Clean package.json should have no vulnerabilities"
+        );
     }
 }

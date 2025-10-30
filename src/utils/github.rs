@@ -66,8 +66,8 @@ use anyhow::{Context, Result};
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use tempfile::TempDir;
-use url::Url;
 use tracing::{debug, info, warn};
+use url::Url;
 
 /// GitHub repository scanner.
 ///
@@ -136,13 +136,18 @@ impl GitHubScanner {
         // Parse GitHub URL
         debug!("Parsing GitHub URL");
         let repo = Self::parse_github_url(url)?;
-        info!("Parsed repository: {}/{} (ref: {:?})", repo.owner, repo.repo, repo.git_ref);
+        info!(
+            "Parsed repository: {}/{} (ref: {:?})",
+            repo.owner, repo.repo, repo.git_ref
+        );
 
         // Create temporary directory
         debug!("Creating temporary directory for clone");
-        let temp_dir = TempDir::new()
-            .context("Failed to create temporary directory")?;
-        debug!("Temporary directory created at: {}", temp_dir.path().display());
+        let temp_dir = TempDir::new().context("Failed to create temporary directory")?;
+        debug!(
+            "Temporary directory created at: {}",
+            temp_dir.path().display()
+        );
 
         // Clone repository
         self.clone_repository(&repo, temp_dir.path()).await?;
@@ -161,8 +166,7 @@ impl GitHubScanner {
     /// 3. Extract git ref if present (branch/tag/commit)
     /// 4. Build clone URL
     pub fn parse_github_url(url: &str) -> Result<GitHubRepo> {
-        let parsed = Url::parse(url)
-            .context("Invalid URL format")?;
+        let parsed = Url::parse(url).context("Invalid URL format")?;
 
         // Verify it's GitHub
         if parsed.host_str() != Some("github.com") {
@@ -170,10 +174,7 @@ impl GitHubScanner {
         }
 
         // Parse path segments
-        let segments: Vec<&str> = parsed.path()
-            .trim_matches('/')
-            .split('/')
-            .collect();
+        let segments: Vec<&str> = parsed.path().trim_matches('/').split('/').collect();
 
         if segments.len() < 2 {
             anyhow::bail!("Invalid GitHub URL: must be github.com/owner/repo");
@@ -213,7 +214,10 @@ impl GitHubScanner {
     /// - --branch: Specific branch/tag to clone
     /// - --quiet: Suppress progress output
     async fn clone_repository(&self, repo: &GitHubRepo, target_dir: &Path) -> Result<()> {
-        info!("Cloning repository: {} (shallow clone --depth=1)", repo.clone_url);
+        info!(
+            "Cloning repository: {} (shallow clone --depth=1)",
+            repo.clone_url
+        );
         if let Some(ref git_ref) = repo.git_ref {
             debug!("Using specific git reference: {}", git_ref);
         }
@@ -221,28 +225,30 @@ impl GitHubScanner {
 
         let mut cmd = Command::new("git");
         cmd.arg("clone")
-            .arg("--depth=1")        // Shallow clone
-            .arg("--single-branch")  // Only one branch
-            .arg("--quiet");         // Suppress output
+            .arg("--depth=1") // Shallow clone
+            .arg("--single-branch") // Only one branch
+            .arg("--quiet"); // Suppress output
 
         // Add branch/tag if specified
         if let Some(ref git_ref) = repo.git_ref {
             cmd.arg("--branch").arg(git_ref);
         }
 
-        cmd.arg(&repo.clone_url)
-            .arg(target_dir);
+        cmd.arg(&repo.clone_url).arg(target_dir);
 
         // Execute clone
-        let output = cmd.output()
-            .context("Failed to execute git clone")?;
+        let output = cmd.output().context("Failed to execute git clone")?;
 
         if !output.status.success() {
             let stderr = String::from_utf8_lossy(&output.stderr);
             anyhow::bail!("Git clone failed: {}", stderr);
         }
 
-        info!("Repository cloned successfully in {:?} to: {}", start.elapsed(), target_dir.display());
+        info!(
+            "Repository cloned successfully in {:?} to: {}",
+            start.elapsed(),
+            target_dir.display()
+        );
 
         Ok(())
     }

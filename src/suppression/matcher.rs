@@ -58,20 +58,19 @@ impl SuppressionMatcher {
             }
 
             SuppressionPattern::File(file_path) => {
-                Ok(vuln.location.file == *file_path
-                    || vuln.location.file.ends_with(file_path))
+                Ok(vuln.location.file == *file_path || vuln.location.file.ends_with(file_path))
             }
 
-            SuppressionPattern::Line(line_number) => {
-                Ok(vuln.location.line == *line_number)
-            }
+            SuppressionPattern::Line(line_number) => Ok(vuln.location.line == *line_number),
 
             SuppressionPattern::VulnType(type_str) => {
                 let vuln_type_name = vuln.vuln_type.name().to_lowercase();
                 let pattern_name = type_str.to_lowercase();
 
-                Ok(vuln_type_name.contains(&pattern_name)
-                    || pattern_name.contains(&vuln_type_name))
+                Ok(
+                    vuln_type_name.contains(&pattern_name)
+                        || pattern_name.contains(&vuln_type_name),
+                )
             }
 
             SuppressionPattern::Severity(severity_str) => {

@@ -86,10 +86,7 @@ mod tests {
     #[test]
     fn test_exit_codes() {
         assert_eq!(SentinelError::Success.exit_code(), 0);
-        assert_eq!(
-            SentinelError::vulnerabilities_found("test").exit_code(),
-            1
-        );
+        assert_eq!(SentinelError::vulnerabilities_found("test").exit_code(), 1);
         assert_eq!(SentinelError::scan_error("test").exit_code(), 2);
         assert_eq!(SentinelError::usage_error("test").exit_code(), 3);
     }

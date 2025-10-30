@@ -1,6 +1,6 @@
 # MCP Sentinel - QA Checklist & Test Cases
 
-**Version**: 2.0.0
+**Version**: 2.6.0
 **Purpose**: Comprehensive quality assurance checklist for pre-release validation
 
 ---

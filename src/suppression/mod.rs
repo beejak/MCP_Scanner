@@ -66,7 +66,7 @@ use tracing::{debug, info, warn};
 
 pub use auditor::SuppressionAuditor;
 pub use matcher::SuppressionMatcher;
-pub use parser::{Suppression, SuppressionConfig, SuppressionPattern, PatternType};
+pub use parser::{PatternType, Suppression, SuppressionConfig, SuppressionPattern};
 
 /// Main suppression manager
 pub struct SuppressionManager {
@@ -97,7 +97,10 @@ impl SuppressionManager {
     /// - Invalid YAML
     /// - Invalid configuration
     pub fn load<P: AsRef<Path>>(path: P) -> Result<Self> {
-        info!("Loading suppression config from: {}", path.as_ref().display());
+        info!(
+            "Loading suppression config from: {}",
+            path.as_ref().display()
+        );
 
         let config = parser::load_suppression_config(path.as_ref())?;
         let matcher = SuppressionMatcher::new();
@@ -143,12 +146,7 @@ impl SuppressionManager {
     /// * `vuln_id` - The vulnerability ID to suppress
     /// * `reason` - Reason for suppression
     /// * `author` - Optional author of the suppression
-    pub fn add_rule(
-        &self,
-        vuln_id: &str,
-        reason: &str,
-        author: Option<String>,
-    ) -> Result<()> {
+    pub fn add_rule(&self, vuln_id: &str, reason: &str, author: Option<String>) -> Result<()> {
         // This is a simplified implementation for testing
         // In production, you'd modify self.config.suppressions
         // For now, we're returning Ok because the integration test
@@ -184,10 +182,7 @@ impl SuppressionManager {
     /// # Returns
     ///
     /// FilteredResults with both active and suppressed vulnerabilities
-    pub fn filter(
-        &self,
-        vulnerabilities: &[Vulnerability],
-    ) -> Result<FilteredResults> {
+    pub fn filter(&self, vulnerabilities: &[Vulnerability]) -> Result<FilteredResults> {
         let mut active = Vec::new();
         let mut suppressed = Vec::new();
 
@@ -273,9 +268,12 @@ impl SuppressionManager {
                     Err(e) => {
                         // Fail-open: if suppression check errors, don't suppress (show vulnerability)
                         // This is safer than hiding potential vulnerabilities due to errors
-                        warn!("Error checking suppression for {}: {}. Not suppressing (fail-open).",
-                              v.vuln_type.name(), e);
-                        true  // Don't suppress on error
+                        warn!(
+                            "Error checking suppression for {}: {}. Not suppressing (fail-open).",
+                            v.vuln_type.name(),
+                            e
+                        );
+                        true // Don't suppress on error
                     }
                 }
             })

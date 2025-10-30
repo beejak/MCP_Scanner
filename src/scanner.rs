@@ -179,10 +179,14 @@ impl Scanner {
         match crate::detectors::secrets::detect(&content, &file_path) {
             Ok(vulns) => {
                 if !vulns.is_empty() {
-                    debug!("Secrets detector found {} issues in {}", vulns.len(), file_path);
+                    debug!(
+                        "Secrets detector found {} issues in {}",
+                        vulns.len(),
+                        file_path
+                    );
                 }
                 vulnerabilities.extend(vulns)
-            },
+            }
             Err(e) => warn!("Secrets detector failed on {}: {}", file_path, e),
         }
 
@@ -190,10 +194,14 @@ impl Scanner {
         match crate::detectors::code_vulns::detect_command_injection(&content, &file_path) {
             Ok(vulns) => {
                 if !vulns.is_empty() {
-                    debug!("Command injection detector found {} issues in {}", vulns.len(), file_path);
+                    debug!(
+                        "Command injection detector found {} issues in {}",
+                        vulns.len(),
+                        file_path
+                    );
                 }
                 vulnerabilities.extend(vulns)
-            },
+            }
             Err(e) => warn!("Command injection detector failed on {}: {}", file_path, e),
         }
 
@@ -201,10 +209,14 @@ impl Scanner {
         match crate::detectors::code_vulns::detect_sensitive_file_access(&content, &file_path) {
             Ok(vulns) => {
                 if !vulns.is_empty() {
-                    debug!("Sensitive file detector found {} issues in {}", vulns.len(), file_path);
+                    debug!(
+                        "Sensitive file detector found {} issues in {}",
+                        vulns.len(),
+                        file_path
+                    );
                 }
                 vulnerabilities.extend(vulns)
-            },
+            }
             Err(e) => warn!("Sensitive file detector failed on {}: {}", file_path, e),
         }
 
@@ -212,10 +224,14 @@ impl Scanner {
         match crate::detectors::tool_poisoning::detect(&content) {
             Ok(vulns) => {
                 if !vulns.is_empty() {
-                    debug!("Tool poisoning detector found {} issues in {}", vulns.len(), file_path);
+                    debug!(
+                        "Tool poisoning detector found {} issues in {}",
+                        vulns.len(),
+                        file_path
+                    );
                 }
                 vulnerabilities.extend(vulns)
-            },
+            }
             Err(e) => warn!("Tool poisoning detector failed on {}: {}", file_path, e),
         }
 
@@ -223,10 +239,14 @@ impl Scanner {
         match crate::detectors::prompt_injection::detect(&content) {
             Ok(vulns) => {
                 if !vulns.is_empty() {
-                    debug!("Prompt injection detector found {} issues in {}", vulns.len(), file_path);
+                    debug!(
+                        "Prompt injection detector found {} issues in {}",
+                        vulns.len(),
+                        file_path
+                    );
                 }
                 vulnerabilities.extend(vulns)
-            },
+            }
             Err(e) => warn!("Prompt injection detector failed on {}: {}", file_path, e),
         }
 
@@ -235,10 +255,14 @@ impl Scanner {
             match crate::detectors::mcp_config::detect(&content, &file_path) {
                 Ok(vulns) => {
                     if !vulns.is_empty() {
-                        debug!("MCP config detector found {} issues in {}", vulns.len(), file_path);
+                        debug!(
+                            "MCP config detector found {} issues in {}",
+                            vulns.len(),
+                            file_path
+                        );
                     }
                     vulnerabilities.extend(vulns)
-                },
+                }
                 Err(e) => warn!("MCP config detector failed on {}: {}", file_path, e),
             }
         }
@@ -248,9 +272,7 @@ impl Scanner {
 
     /// Check if file appears to be an MCP configuration file
     fn is_mcp_config_file(path: &Path) -> bool {
-        let file_name = path.file_name()
-            .and_then(|n| n.to_str())
-            .unwrap_or("");
+        let file_name = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
 
         let path_str = path.to_string_lossy();
 

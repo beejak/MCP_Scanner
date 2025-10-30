@@ -234,7 +234,11 @@ impl GitHelper {
     /// List of files changed in the branch
     pub fn get_changed_files_in_branch(&self, branch: &str) -> Result<Vec<PathBuf>> {
         // Try to find the main branch (main or master)
-        let base_branch = if self.repo.find_branch("main", git2::BranchType::Local).is_ok() {
+        let base_branch = if self
+            .repo
+            .find_branch("main", git2::BranchType::Local)
+            .is_ok()
+        {
             "main"
         } else if self
             .repo

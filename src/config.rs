@@ -2,8 +2,8 @@
 //!
 //! Provides configuration loading with precedence: CLI > Project > User > Default
 
-use anyhow::Result;
 use crate::models::vulnerability::Severity;
+use anyhow::Result;
 
 /// Main configuration struct (simplified for testing)
 #[derive(Debug, Clone, PartialEq)]
@@ -16,7 +16,6 @@ pub struct Config {
 
     /// Enable AI analysis
     pub enable_ai_analysis: bool,
-
     // Additional fields can be added as needed
 }
 

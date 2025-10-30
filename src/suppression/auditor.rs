@@ -93,7 +93,9 @@ impl SuppressionAuditor {
         #[cfg(not(any(unix, windows)))]
         let null_path = PathBuf::from(".mcp-sentinel-audit-disabled.log");
 
-        Self { log_path: null_path }
+        Self {
+            log_path: null_path,
+        }
     }
 
     /// Get default log path (~/.mcp-sentinel/suppressions.log)

@@ -1,8 +1,8 @@
 //! Tool poisoning detection
 
 use anyhow::Result;
-use regex::Regex;
 use once_cell::sync::Lazy;
+use regex::Regex;
 
 use crate::models::vulnerability::{Location, Severity, Vulnerability, VulnerabilityType};
 
@@ -24,7 +24,10 @@ pub fn detect(content: &str) -> Result<Vec<Vulnerability>> {
 
     for (line_num, line) in content.lines().enumerate() {
         // Check for invisible/suspicious Unicode characters
-        if line.chars().any(|c| matches!(c, '\u{200B}' | '\u{FEFF}' | '\u{200C}' | '\u{200D}')) {
+        if line
+            .chars()
+            .any(|c| matches!(c, '\u{200B}' | '\u{FEFF}' | '\u{200C}' | '\u{200D}'))
+        {
             vulnerabilities.push(
                 Vulnerability::new(
                     format!("POISON-{:03}", id_counter),
