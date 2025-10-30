@@ -2,7 +2,7 @@
 name = "mcp-sentinel"
 version = "2.6.0"
 edition = "2021"
-rust-version = "1.75.0"
+rust-version = "1.85.0"
 authors = ["MCP Sentinel Contributors"]
 description = "The Ultimate Security Scanner for MCP Servers - combining static analysis, semantic AST parsing, AI-powered detection, Semgrep integration, and enterprise reporting"
 license = "Apache-2.0"
