@@ -1,6 +1,8 @@
 # Rust build artifacts
 /target/
-Cargo.lock
+# Cargo.lock - REMOVED: This is a binary application, not a library
+# Binary applications should commit Cargo.lock for reproducible builds
+# Cargo.lock
 
 # IDE files
 .vscode/
