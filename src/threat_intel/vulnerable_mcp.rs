@@ -107,13 +107,27 @@ impl VulnerableMcpClient {
     fn build_query(&self, vulnerability: &Vulnerability) -> String {
         let vuln_type = match vulnerability.vuln_type {
             VulnerabilityType::CommandInjection => "command_injection",
-            VulnerabilityType::SQLInjection => "sql_injection",
-            VulnerabilityType::XSS => "xss",
+            VulnerabilityType::SqlInjection => "sql_injection",
+            VulnerabilityType::XssVulnerability => "xss",
             VulnerabilityType::PathTraversal => "path_traversal",
-            VulnerabilityType::SSRF => "ssrf",
             VulnerabilityType::PrototypePollution => "prototype_pollution",
             VulnerabilityType::CodeInjection => "code_injection",
-            _ => "generic",
+            VulnerabilityType::ToolPoisoning => "tool_poisoning",
+            VulnerabilityType::PromptInjection => "prompt_injection",
+            VulnerabilityType::SensitiveFileAccess => "sensitive_file_access",
+            VulnerabilityType::DataExfiltration => "data_exfiltration",
+            VulnerabilityType::ToxicFlow => "toxic_flow",
+            VulnerabilityType::RugPull => "rug_pull",
+            VulnerabilityType::ShadowTool => "shadow_tool",
+            VulnerabilityType::UnsafeDeserialization => "unsafe_deserialization",
+            VulnerabilityType::HardcodedCredentials => "hardcoded_credentials",
+            VulnerabilityType::SecretsLeakage => "secrets_leakage",
+            VulnerabilityType::PiiExposure => "pii_exposure",
+            VulnerabilityType::CrossOriginEscalation => "cross_origin_escalation",
+            VulnerabilityType::BehavioralAnomaly => "behavioral_anomaly",
+            VulnerabilityType::SupplyChainAttack => "supply_chain_attack",
+            VulnerabilityType::InsecureConfiguration => "insecure_configuration",
+            VulnerabilityType::HardcodedSecret => "hardcoded_secret",
         };
 
         // Include CWE if available

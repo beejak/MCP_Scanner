@@ -146,6 +146,7 @@ fn prepare_template_data(result: &ScanResult) -> serde_json::Value {
     vulns_by_severity.insert("high", Vec::new());
     vulns_by_severity.insert("medium", Vec::new());
     vulns_by_severity.insert("low", Vec::new());
+    vulns_by_severity.insert("info", Vec::new());
 
     for vuln in &result.vulnerabilities {
         let key = match vuln.severity {
@@ -153,6 +154,7 @@ fn prepare_template_data(result: &ScanResult) -> serde_json::Value {
             Severity::High => "high",
             Severity::Medium => "medium",
             Severity::Low => "low",
+            Severity::Info => "info",
         };
         vulns_by_severity.get_mut(key).unwrap().push(vuln);
     }

@@ -111,6 +111,7 @@ fn print_severity_count(label: &str, count: usize, severity: Severity, use_color
             Severity::High => Color::DarkYellow,
             Severity::Medium => Color::Yellow,
             Severity::Low => Color::Blue,
+            Severity::Info => Color::Cyan,
         };
 
         println!(
@@ -149,6 +150,7 @@ fn print_vulnerabilities(result: &ScanResult, use_color: bool) {
                 Severity::High => Color::DarkYellow,
                 Severity::Medium => Color::Yellow,
                 Severity::Low => Color::Blue,
+                Severity::Info => Color::Cyan,
             };
             println!(
                 "{} {} ISSUES",

@@ -24,6 +24,7 @@ pub enum OutputFormat {
 
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub enum SeverityLevel {
+    Info,
     Low,
     Medium,
     High,
@@ -33,6 +34,7 @@ pub enum SeverityLevel {
 impl From<crate::models::vulnerability::Severity> for SeverityLevel {
     fn from(severity: crate::models::vulnerability::Severity) -> Self {
         match severity {
+            crate::models::vulnerability::Severity::Info => SeverityLevel::Info,
             crate::models::vulnerability::Severity::Low => SeverityLevel::Low,
             crate::models::vulnerability::Severity::Medium => SeverityLevel::Medium,
             crate::models::vulnerability::Severity::High => SeverityLevel::High,
@@ -44,6 +46,7 @@ impl From<crate::models::vulnerability::Severity> for SeverityLevel {
 impl From<SeverityLevel> for crate::models::vulnerability::Severity {
     fn from(level: SeverityLevel) -> Self {
         match level {
+            SeverityLevel::Info => crate::models::vulnerability::Severity::Info,
             SeverityLevel::Low => crate::models::vulnerability::Severity::Low,
             SeverityLevel::Medium => crate::models::vulnerability::Severity::Medium,
             SeverityLevel::High => crate::models::vulnerability::Severity::High,

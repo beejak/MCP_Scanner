@@ -201,7 +201,7 @@ fn severity_to_sarif_level(severity: &Severity) -> String {
     match severity {
         Severity::Critical | Severity::High => "error",
         Severity::Medium => "warning",
-        Severity::Low => "note",
+        Severity::Low | Severity::Info => "note",
     }
     .to_string()
 }
