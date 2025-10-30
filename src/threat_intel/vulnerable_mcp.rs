@@ -286,7 +286,7 @@ mod tests {
 
         let mut vuln = Vulnerability::new(
             "TEST-002",
-            VulnerabilityType::SQLInjection,
+            VulnerabilityType::SqlInjection,
             Severity::Critical,
             "SQL Injection",
             "Test SQL injection",

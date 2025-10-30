@@ -40,7 +40,7 @@ impl MitreAttackMapper {
 
         // SQL Injection -> T1190 (Exploit Public-Facing Application)
         mappings.insert(
-            VulnerabilityType::SQLInjection,
+            VulnerabilityType::SqlInjection,
             vec![
                 super::AttackTechnique {
                     id: "T1190".to_string(),
@@ -59,7 +59,7 @@ impl MitreAttackMapper {
 
         // XSS -> T1189 (Drive-by Compromise), T1059.007 (JavaScript)
         mappings.insert(
-            VulnerabilityType::XSS,
+            VulnerabilityType::XssVulnerability,
             vec![
                 super::AttackTechnique {
                     id: "T1189".to_string(),
@@ -105,9 +105,9 @@ impl MitreAttackMapper {
             ],
         );
 
-        // SSRF -> T1071 (Application Layer Protocol), T1090 (Proxy)
+        // SSRF (now CrossOriginEscalation) -> T1071 (Application Layer Protocol), T1090 (Proxy)
         mappings.insert(
-            VulnerabilityType::SSRF,
+            VulnerabilityType::CrossOriginEscalation,
             vec![
                 super::AttackTechnique {
                     id: "T1071".to_string(),
@@ -342,7 +342,7 @@ mod tests {
 
         let vuln = Vulnerability::new(
             "TEST-002",
-            VulnerabilityType::SQLInjection,
+            VulnerabilityType::SqlInjection,
             Severity::Critical,
             "SQL Injection",
             "Test",
