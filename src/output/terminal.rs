@@ -200,7 +200,7 @@ fn print_vulnerability(vuln: &Vulnerability, use_color: bool) {
     if let Some(impact) = &vuln.impact {
         println!();
         if use_color {
-            println!("  ⚠️  Impact: {}", impact.with(Color::DarkYellow));
+            println!("  ⚠️  Impact: {}", impact.as_str().with(Color::DarkYellow));
         } else {
             println!("  ⚠️  Impact: {}", impact);
         }
@@ -210,7 +210,7 @@ fn print_vulnerability(vuln: &Vulnerability, use_color: bool) {
     if let Some(remediation) = &vuln.remediation {
         println!();
         if use_color {
-            println!("  🔧 Remediation: {}", remediation.with(Color::Green));
+            println!("  🔧 Remediation: {}", remediation.as_str().with(Color::Green));
         } else {
             println!("  🔧 Remediation: {}", remediation);
         }
