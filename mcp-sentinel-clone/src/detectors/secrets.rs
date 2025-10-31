@@ -109,3 +109,19 @@ pub fn detect(content: &str, file_path: &str) -> Result<Vec<Vulnerability>> {
 
     Ok(vulnerabilities)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_detect_secrets() {
+        let content = r#"
+            const API_KEY = "sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
+            const AWS_KEY = "AKIAxxxxxxxxxxxxxxxx";
+        "#;
+        let file_path = "test.js";
+        let vulnerabilities = detect(content, file_path).unwrap();
+        assert_eq!(vulnerabilities.len(), 2);
+    }
+}

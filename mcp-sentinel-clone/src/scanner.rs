@@ -1,4 +1,5 @@
 use anyhow::Result;
+use indicatif::{ProgressBar, ProgressStyle};
 use std::path::{Path, PathBuf};
 use std::time::Instant;
 use tokio::fs;
@@ -32,23 +33,39 @@ impl Scanner {
             scan_duration_ms: 0,
         };
 
-        let mut tasks: Vec<JoinHandle<Result<Vec<Vulnerability>>>> = vec![];
-        let walker = WalkDir::new(path).into_iter();
+        // Phase 1: Discover files
+        let files_to_scan: Vec<PathBuf> = WalkDir::new(path)
+            .into_iter()
+            .filter_entry(|e| !self.is_excluded(e.path()))
+            .filter_map(|e| e.ok())
+            .filter(|e| e.file_type().is_file())
+            .map(|e| e.path().to_path_buf())
+            .collect();
 
-        for entry in walker.filter_entry(|e| !self.is_excluded(e.path())) {
-            let entry = entry?;
-            if entry.file_type().is_file() {
-                let path_buf = entry.path().to_path_buf();
-                tasks.push(tokio::spawn(async move {
-                    scan_file(path_buf).await
-                }));
-            }
+        // Setup progress bar
+        let pb = ProgressBar::new(files_to_scan.len() as u64);
+        pb.set_style(
+            ProgressStyle::default_bar()
+                .template("{spinner:.green} [{bar:40.cyan/blue}] {pos}/{len} files ({eta})")?
+                .progress_chars("=>-"),
+        );
+
+        // Phase 2: Spawn scanning tasks
+        let mut tasks: Vec<JoinHandle<Result<Vec<Vulnerability>>>> = vec![];
+        for path_buf in files_to_scan {
+            tasks.push(tokio::spawn(async move {
+                scan_file(path_buf).await
+            }));
         }
 
+        // Phase 3: Collect results and update progress
         for task in tasks {
             let res = task.await??;
             result.vulnerabilities.extend(res);
+            pb.inc(1);
         }
+
+        pb.finish_with_message("Scan complete");
 
         result.scan_duration_ms = start_time.elapsed().as_millis() as u64;
         Ok(result)
