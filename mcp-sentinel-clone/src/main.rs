@@ -2,7 +2,7 @@ use clap::{Parser, ValueEnum};
 use mcp_sentinel_clone::{
     models::config::ScanConfig,
     scanner::Scanner,
-    output::{terminal, json},
+    output::{terminal, json, sarif},
 };
 
 #[derive(Parser)]
@@ -33,6 +33,7 @@ enum Commands {
 enum OutputFormat {
     Terminal,
     Json,
+    Sarif,
 }
 
 fn main() {
@@ -47,6 +48,7 @@ fn main() {
                     match output {
                         OutputFormat::Terminal => terminal::display_scan_result(&result),
                         OutputFormat::Json => json::display_scan_result(&result),
+                        OutputFormat::Sarif => sarif::display_scan_result(&result),
                     }
                 }
                 Err(e) => {

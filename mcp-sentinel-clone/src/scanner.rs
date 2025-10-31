@@ -35,8 +35,9 @@ impl Scanner {
         for entry in walker.filter_entry(|e| !self.is_excluded(e.path())) {
             let entry = entry?;
             if entry.file_type().is_file() {
-                let vulns = self.scan_file(entry.path())?;
-                result.vulnerabilities.extend(vulns);
+                if let Ok(vulns) = self.scan_file(entry.path()) {
+                    result.vulnerabilities.extend(vulns);
+                }
             }
         }
 
@@ -45,16 +46,19 @@ impl Scanner {
     }
 
     fn scan_file(&self, path: &Path) -> Result<Vec<Vulnerability>> {
-        let content = fs::read_to_string(path)?;
+        let content = match fs::read_to_string(path) {
+            Ok(c) => c,
+            Err(_) => return Ok(Vec::new()), // Skip files that can't be read as string
+        };
         let file_path = path.to_str().unwrap_or_default();
 
         let mut vulnerabilities = Vec::new();
 
-        let secrets_vulns = detectors::secrets::detect(&content, file_path)?;
-        vulnerabilities.extend(secrets_vulns);
-
-        let command_injection_vulns = detectors::command_injection::detect(&content, file_path)?;
-        vulnerabilities.extend(command_injection_vulns);
+        vulnerabilities.extend(detectors::secrets::detect(&content, file_path)?);
+        vulnerabilities.extend(detectors::command_injection::detect(&content, file_path)?);
+        vulnerabilities.extend(detectors::sensitive_file_access::detect(&content, file_path)?);
+        vulnerabilities.extend(detectors::tool_poisoning::detect(&content, file_path)?);
+        vulnerabilities.extend(detectors::prompt_injection::detect(&content, file_path)?);
 
         Ok(vulnerabilities)
     }
