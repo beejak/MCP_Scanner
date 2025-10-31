@@ -1,9 +1,11 @@
 use clap::{Parser, ValueEnum};
 use mcp_sentinel_clone::{
-    models::config::ScanConfig,
+    config::load_config,
+    models::vulnerability::Severity,
     scanner::Scanner,
     output::{terminal, json, sarif},
 };
+use std::process::ExitCode;
 
 #[derive(Parser)]
 #[command(
@@ -26,35 +28,65 @@ enum Commands {
         /// The output format.
         #[arg(short, long, value_enum, default_value_t = OutputFormat::Terminal)]
         output: OutputFormat,
+        /// Path to a custom configuration file.
+        #[arg(short, long)]
+        config: Option<String>,
+        /// Minimum severity to report.
+        #[arg(long, value_enum, default_value_t = Severity::Low)]
+        severity: Severity,
+        /// Exit with code 1 if vulnerabilities at or above this level are found.
+        #[arg(long, value_enum, default_value_t = Severity::Low)]
+        fail_on: Severity,
     },
 }
 
-#[derive(ValueEnum, Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(ValueEnum, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 enum OutputFormat {
     Terminal,
     Json,
     Sarif,
 }
 
-fn main() {
+#[tokio::main]
+async fn main() -> ExitCode {
     let cli = Cli::parse();
 
-    match cli.command {
-        Commands::Scan { target, output } => {
-            let config = ScanConfig::default();
+    let result = match cli.command {
+        Commands::Scan { target, output, config, severity, fail_on } => {
+            let config = match load_config(config.as_deref()) {
+                Ok(c) => c,
+                Err(e) => {
+                    eprintln!("Error loading configuration: {}", e);
+                    return ExitCode::from(2);
+                }
+            };
+
             let scanner = Scanner::new(config);
-            match scanner.scan_directory(&target) {
-                Ok(result) => {
+            match scanner.scan_directory(&target).await {
+                Ok(mut result) => {
+                    // Filter vulnerabilities by severity
+                    result.vulnerabilities.retain(|v| v.severity >= severity);
+
                     match output {
                         OutputFormat::Terminal => terminal::display_scan_result(&result),
                         OutputFormat::Json => json::display_scan_result(&result),
                         OutputFormat::Sarif => sarif::display_scan_result(&result),
                     }
+
+                    // Determine the exit code
+                    if result.vulnerabilities.iter().any(|v| v.severity >= fail_on) {
+                        ExitCode::from(1)
+                    } else {
+                        ExitCode::SUCCESS
+                    }
                 }
                 Err(e) => {
                     eprintln!("Error during scan: {}", e);
+                    ExitCode::from(2)
                 }
             }
         }
-    }
+    };
+
+    result
 }
