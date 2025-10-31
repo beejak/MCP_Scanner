@@ -47,7 +47,16 @@ impl Scanner {
     fn scan_file(&self, path: &Path) -> Result<Vec<Vulnerability>> {
         let content = fs::read_to_string(path)?;
         let file_path = path.to_str().unwrap_or_default();
-        detectors::secrets::detect(&content, file_path)
+
+        let mut vulnerabilities = Vec::new();
+
+        let secrets_vulns = detectors::secrets::detect(&content, file_path)?;
+        vulnerabilities.extend(secrets_vulns);
+
+        let command_injection_vulns = detectors::command_injection::detect(&content, file_path)?;
+        vulnerabilities.extend(command_injection_vulns);
+
+        Ok(vulnerabilities)
     }
 
     fn is_excluded(&self, path: &Path) -> bool {
