@@ -2,10 +2,12 @@ use clap::{Parser, ValueEnum};
 use mcp_sentinel_clone::{
     config::load_config,
     models::vulnerability::Severity,
+    proxy::start_proxy,
     scanner::Scanner,
     output::{terminal, json, sarif},
 };
 use std::process::ExitCode;
+use tracing_subscriber::{FmtSubscriber, EnvFilter};
 
 #[derive(Parser)]
 #[command(
@@ -38,6 +40,12 @@ enum Commands {
         #[arg(long, value_enum, default_value_t = Severity::Low)]
         fail_on: Severity,
     },
+    /// Run as a forwarding proxy.
+    Proxy {
+        /// The port to listen on.
+        #[arg(short, long, default_value_t = 8000)]
+        port: u16,
+    },
 }
 
 #[derive(ValueEnum, Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
@@ -49,6 +57,12 @@ enum OutputFormat {
 
 #[tokio::main]
 async fn main() -> ExitCode {
+    let subscriber = FmtSubscriber::builder()
+        .with_env_filter(EnvFilter::from_default_env())
+        .finish();
+    tracing::subscriber::set_global_default(subscriber)
+        .expect("setting default subscriber failed");
+
     let cli = Cli::parse();
 
     let result = match cli.command {
@@ -64,16 +78,12 @@ async fn main() -> ExitCode {
             let scanner = Scanner::new(config);
             match scanner.scan_directory(&target).await {
                 Ok(mut result) => {
-                    // Filter vulnerabilities by severity
                     result.vulnerabilities.retain(|v| v.severity >= severity);
-
                     match output {
                         OutputFormat::Terminal => terminal::display_scan_result(&result),
                         OutputFormat::Json => json::display_scan_result(&result),
                         OutputFormat::Sarif => sarif::display_scan_result(&result),
                     }
-
-                    // Determine the exit code
                     if result.vulnerabilities.iter().any(|v| v.severity >= fail_on) {
                         ExitCode::from(1)
                     } else {
@@ -85,6 +95,10 @@ async fn main() -> ExitCode {
                     ExitCode::from(2)
                 }
             }
+        }
+        Commands::Proxy { port } => {
+            start_proxy(port).await;
+            ExitCode::SUCCESS
         }
     };
 

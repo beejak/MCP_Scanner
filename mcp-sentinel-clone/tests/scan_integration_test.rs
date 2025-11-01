@@ -17,3 +17,12 @@ async fn test_scan_fixtures() -> Result<()> {
 
     Ok(())
 }
+
+#[tokio::test]
+async fn test_scan_empty_file() -> Result<()> {
+    let config = ScanConfig::default();
+    let scanner = Scanner::new(config);
+    let result = scanner.scan_directory("tests/fixtures/empty.txt").await?;
+    assert_eq!(result.vulnerabilities.len(), 0);
+    Ok(())
+}
