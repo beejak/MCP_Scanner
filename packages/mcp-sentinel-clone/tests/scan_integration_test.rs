@@ -1,4 +1,4 @@
-use mcp_sentinel_clone::scanner::Scanner;
+use mcp_sentinel_clone::engine::scanner::Scanner;
 use mcp_sentinel_clone::models::config::ScanConfig;
 use anyhow::Result;
 
